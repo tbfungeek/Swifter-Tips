@@ -8,15 +8,15 @@ var greeting = "Hello, playground"
 // 单行注释
 
 /*
-    这是一个
-    多行
-    注释
-*/
+ 这是一个
+ 多行
+ 注释
+ */
 
 /* 这是一个嵌套注释的外层
-    /*
-        这是一个嵌套注释的内层
-     */
+ /*
+  这是一个嵌套注释的内层
+  */
  */
 
 
@@ -49,25 +49,28 @@ let number: Int = 10
 // 八进制，前缀为0o
 // 十六进制，前缀为0x
 
+// 随机值
+Int.random(in: 0...5)
+
 // 变量:
 var variableNumber: Int = 42
 // 类型: 类型描述了一组值以及可以对它们执行的操作
 // Swift 不允许您将一种类型的值分配给另一种类型,如果要将一种类型赋给另一种类型，必须通过显式转换类型
 
 /*
-var integer: Int = 100
-var decimal: Double = 12.5
-// 会提示错误
-integer = decimal
-// 强制类型转换
-integer = Int(decimal)
-
-let hourlyRate: Double = 19.5
-let hoursWorked: Int = 10
-// 这里也会提示错误
-let totalCost: Double = hourlyRate * hoursWorked
-// 指明类型
-let totalCost: Double = hourlyRate * Double(hoursWorked)
+ var integer: Int = 100
+ var decimal: Double = 12.5
+ // 会提示错误
+ integer = decimal
+ // 强制类型转换
+ integer = Int(decimal)
+ 
+ let hourlyRate: Double = 19.5
+ let hoursWorked: Int = 10
+ // 这里也会提示错误
+ let totalCost: Double = hourlyRate * hoursWorked
+ // 指明类型
+ let totalCost: Double = hourlyRate * Double(hoursWorked)
  */
 
 // 类型推断:
@@ -143,6 +146,113 @@ print(dy)
 typealias AnimalName = String
 var dogName: AnimalName = "didi"
 print(dogName)
+
+// 七 控制符
+
+// while() {} / repeat {} while
+
+// for in
+// for index in 1...6
+// for _ in 1..< 8
+// for (key,value) in maps
+
+// if
+// switch
+// 1. 基本用法：不需要break
+//    当匹配的 case 分支中的代码执行完毕后，程序会 终止 switch 语句，而不会继续执行下一个 case 分支。这也就是说，不需要在 case 分支中显式地使用 break 语句
+//    fallthrough
+//    fallthrough关键字不会检查它下一个将会落入执行的case中的匹配条件。fallthrough简单地使代码继续连接到下一个 case 中的代码(注意：是下一个，不是整个)
+// 2. 多个case相同处理: case 0,1,2,3,4,5:             [合并匹配]
+// 3. 使用范围匹配: case 0...5:                       [范围匹配]
+// 4. 使用let where匹配: case let x where x % 2 == 0 [取值条件匹配]
+
+func isOdd(number:Int) -> Bool {
+    switch (number) {
+    case let x where x % 2 != 0:
+        return true
+    default: return false
+    }
+}
+
+print(isOdd(number: 34))
+
+func location(coordinates:(Int,Int,Int)) {
+    switch coordinates {
+    case let (x, y, _) where y == x:
+        print("Along the y = x line.")
+    case let (x, y, _) where y == x * x:
+        print("Along the y = x^2 line.")
+    default:
+        break
+    }
+}
+location(coordinates: (10,10,34))
+location(coordinates: (10,100,34))
+
+// 5. 部分匹配:
+//    需要固定匹配的内容写死，不需要匹配的可以通过let取值或者通过_忽略，还可以通过let where 对let取值部分进行进一步匹配
+let coordinate = (x: 3, y: 2, z: 5)
+switch coordinate {
+case (0, 0, 0): // 1
+    print("Origin")
+case (_, 0, 0): // 2
+    print("On the x-axis.")
+case (0, _, 0): // 3
+    print("On the y-axis.")
+case (0, 0, _): // 4
+    print("On the z-axis.")
+default:        // 5
+    print("Somewhere in space")
+}
+
+switch coordinate {
+case (0, 0, 0):
+    print("Origin")
+case (let x, 0, 0):
+    print("On the x-axis at x = \(x)")
+case (0, let y, 0):
+    print("On the y-axis at y = \(y)")
+case (0, 0, let z):
+    print("On the z-axis at z = \(z)")
+case let (x, y, z):
+    print("Somewhere in space at x = \(x), y = \(y), z = \(z)")
+}
+
+
+// 6. 控制转移语句: break, continue
+let value = 23
+
+switch value {
+case let x where x > 20:
+    print(x)
+    fallthrough
+case 23:
+    print(value)
+default:
+    print("default")
+}
+
+// 7. guard 语句
+// 与if语句相同的是，guard也是基于一个表达式的布尔值去判断一段代码是否该被执行。与if语句不同的是，guard只有在条件不满足的时候才会执行这段代码。
+// 在使用它的时候默念 保证guard后面的语句执行没问题，否则执行else
+/*
+guard let item = inventory[name] else {
+    throw VendingMachineError.InvalidSelection
+}
+*/
+
+// 8. where 语句 [TODO]
+
+
+
+
+
+
+
+
+
+
+
 
 
 
