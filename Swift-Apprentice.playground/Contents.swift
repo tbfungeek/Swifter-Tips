@@ -371,12 +371,12 @@ if let authorName = authorName,
 
 // 使用 guard 解包
 func guardMyCastle(name: String?) {
-  guard let castleName = name else {
-    print("No castle!")
-    return
-  }
-  // At this point, `castleName` is a non-optional String
-  print("Your castle called \(castleName) was guarded!")
+    guard let castleName = name else {
+        print("No castle!")
+        return
+    }
+    // At this point, `castleName` is a non-optional String
+    print("Your castle called \(castleName) was guarded!")
 }
 
 // 提供默认值
@@ -399,7 +399,7 @@ var firstPlayer = subscribers[0]
 // 不需要index
 let scores = [2, 2, 8, 6, 1, 2, 1]
 for score in scores {
-  print(score)
+    print(score)
 }
 
 // 需要index
@@ -435,15 +435,15 @@ var namesAndScores = ["Anna": 2, "Brian": 2, "Craig": 8, "Donna": 6]
 
 // 10.2 遍历字典
 for (player, score) in namesAndScores {
-  print("\(player) - \(score)")
+    print("\(player) - \(score)")
 }
 
 for player in namesAndScores.keys {
-  print("\(player), ", terminator: "") // no newline
+    print("\(player), ", terminator: "") // no newline
 }
 
 for player in namesAndScores.values {
-  print("\(player), ", terminator: "") // no newline
+    print("\(player), ", terminator: "") // no newline
 }
 
 // 10.3 增加元素
@@ -492,23 +492,23 @@ var multiplyClosure: (Int, Int) -> Int
 
 // 12.2 定义
 var multiplyClosureDefine = { (a: Int, b: Int) -> Int in
-  return a * b
+    return a * b
 }
 
 // 12.3 简化方案
 // 1. 如果闭包由单个 return 语句组成，则可以省略return关键字
 multiplyClosure = { (a: Int, b: Int) -> Int in
-  a * b
+    a * b
 }
 
 // 2. 可以使用 Swift 的类型推断，通过删除类型信息来进一步缩短语法
 multiplyClosure = { (a, b) in
-  a * b
+    a * b
 }
 
 // 3. 可以根据需要省略参数列表。Swift 允许您按编号引用每个参数，从零开始
 multiplyClosure = {
-  $0 * $1
+    $0 * $1
 }
 
 // 12.4 尾随闭包
@@ -607,7 +607,7 @@ let strings = "Matt"
 
 // 13.1 遍历字符
 for char in strings {
-  print(char)
+    print(char)
 }
 
 // 13.2 索引
@@ -647,6 +647,64 @@ print(raw1)
 
 let raw2 = ##"Aren’t we "# clever"##
 print(raw2)
+
+// 十四. 结构体
+// 14.1 结构体是值类型
+// 14.2 在定义结构体的时候需要判断某个属性是否后续会发生变化的可能，如果有则声明为var否则声明为let
+// 14.3 如果可以在类型初始化时对属性的值做出合理的假设，则可以为该属性赋予默认值。
+// 14.4 存储属性和计算属性
+// [存储属性] 存储属性可以是常量或变量
+// [计算属性] 计算属性必须为变量,计算属性还必须包含一个类型
+struct TV {
+    var width : Double
+    var height: Double
+    
+    var diagnoal: Int
+    {
+        let result = (width * width + height * height).squareRoot().rounded()
+        return Int(result)
+    }
+}
+
+var tv = TV(width: 53.93, height: 95.87)
+print(tv.diagnoal)
+
+
+struct TVS {
+    var width : Double
+    var height: Double
+    
+    var diagnoal: Int
+    {
+        get {
+            let result = (height * height +
+                          width * width).squareRoot().rounded()
+            return Int(result)
+        }
+        set {
+            let ratioWidth = 16.0
+            let ratioHeight = 9.0
+            let ratioDiagonal = (ratioWidth * ratioWidth +
+                                 ratioHeight * ratioHeight).squareRoot()
+            height = Double(newValue) * ratioHeight / ratioDiagonal
+            width = height * ratioWidth / ratioHeight
+            //注意setter 中没有return声明—它只修改其他存储的属性
+        }
+    }
+}
+
+// 14.5 类型属性
+struct Level {
+  static var highestLevel = 1
+  let id: Int
+  var boss: String
+  var unlocked: Bool
+}
+
+
+
+
+
 
 
 
