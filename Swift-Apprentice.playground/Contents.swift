@@ -653,8 +653,8 @@ print(raw2)
 // 14.2 在定义结构体的时候需要判断某个属性是否后续会发生变化的可能，如果有则声明为var否则声明为let
 // 14.3 如果可以在类型初始化时对属性的值做出合理的假设，则可以为该属性赋予默认值。
 // 14.4 存储属性和计算属性
-// [存储属性] 存储属性可以是常量或变量
-// [计算属性] 计算属性必须为变量,计算属性还必须包含一个类型
+// [存储属性] 存储属性有对应的内存用于存储，存储属性可以是常量或变量。可以根据实际需要决定是否需要提供默认值，没有提供默认值的需要在构造方法中进行初始化
+// [计算属性] 计算属性必须为变量,计算属性还必须包含一个类型，计算属性还可以有get{} set{} 方法 （一般我们只是给计算属性添加 get set重写）
 struct TV {
     var width : Double
     var height: Double
@@ -693,13 +693,191 @@ struct TVS {
     }
 }
 
-// 14.5 类型属性
-struct Level {
-  static var highestLevel = 1
-  let id: Int
-  var boss: String
-  var unlocked: Bool
+var c:Int {
+    get{
+        //这里不论是c还是self.c都会造成crash 原因是方法的死循环，而且 不能像 OC 中 写上 _c
+        return 1
+        //return self.c 不论是 c 还是 self.c 都会造成 crash  原因是方法的死循环
+        //return c 不论是 c 还是 self.c 都会造成 crash  原因是方法的死循环
+    }
+    set{
+        // 我们测试 写上 self.c = newValue 和 不写 都会造成 crash
+        // 而且 不能像 OC 中 写上 _c
+        //  c = newValue  造成 crash  原因是方法的死循环
+        // a = newValue 一般在这里给存储属性赋值
+        print("Recived new value", newValue, " and stored into 'A' ")
+    }
 }
+
+// 14.5 get{} set{} didSet{} willSet{}
+// didSet{} willSet{}一般用于监听存储属性的修改，get{} set{} 用于计算属性中
+// didSet 属性值改变后触发，willSet 在属性值改变前触发
+// willSet可以带一个newName的参数，没有的话，该参数默认命名为newValue。
+// didSet可以带一个oldName的参数，表示旧的属性，不带的话默认命名为oldValue。
+// 属性初始化时，willSet和didSet不会调用。只有在初始化上下文之外，当设置属性值时才会调用。
+// 即使是设置的值和原来值相同，willSet和didSet也会被调用
+// get{} set{} / didSet{} willSet{} 不能共存 也就是说 willSet/didSet观察者仅可用于存储的属性。如果您想监听计算属性的更改，只需将相关代码添加到属性的设置器中。
+
+// 14.6 类型属性
+struct Level {
+    static var highestLevel = 1
+    var id: Int
+    var boss: String {
+        set {
+            
+        }
+        get {
+            return "boss value"
+        }
+    }
+    
+    var unlocked: Bool = true {
+        willSet {
+            print("willSet unlocked")
+        }
+        didSet {
+            print("didSet unlocked")
+        }
+    }
+}
+
+var level:Level = Level(id: 23, unlocked: true)
+level.unlocked
+level.unlocked = false
+
+print(level.unlocked)
+
+// 14.7 懒加载属性（在计算属性前增加lazy，在后面增加()）
+
+struct Circle {
+  lazy var pi = {
+    ((4.0 * atan(1.0 / 5.0)) - atan(1.0 / 239.0)) * 4.0
+  }()
+  var radius = 0.0
+  var circumference: Double {
+    mutating get {
+      pi * radius * 2
+    }
+  }
+  init(radius: Double) {
+    self.radius = radius
+  }
+}
+
+// 14.8 初始化器
+// 14.9 mutating 方法
+// mutating 关键字标记了改变结构值的方法，通过将方法标记为mutating，可以告诉Swift编译器这个方法不能在常量上调用。
+// 14.10 类型方法 用static修饰符
+struct Math {
+  // 1
+  static func factorial(of number: Int) -> Int {
+    // 2
+    (1...number).reduce(1, *)
+  }
+}
+// 3
+Math.factorial(of: 6) // 720
+
+// 14.11 通过扩展为结构体添加方法和初始化器
+
+// 十五. 类
+// 15.1 类是引用类型
+// 15.2 与结构不同，类不自动提供一个成员初始化器
+// 15.3 类类型的变量不存储实际实例——它存储对存储实例的内存位置的引用
+// 15.4 结构体存储在栈上，类存储在堆上
+// 15.5 === 表示是否是同一个对象，== 表示 是否内容相等
+// 15.6 类是可变的，结构体是不可变的如果需要改变自身的值需要添加mutating修饰
+// 15.7 使用扩展，扩展类添加方法和计算属性，也可以使用继承将功能添加到类中
+// 15.8 Swift 中的继承是单继承
+// 15.9 多态性与类型转换
+// as: 转换为在编译时已知会成功的特定类型
+// as?: 尝试性转换，转换失败会返回nil
+// as!: 强行转换，转换失败会崩溃
+
+
+// 十六. 枚举
+
+// 十七. 协议
+
+// 十八. 泛型
+
+// 十九. 访问控制
+// 19.1 private 只能被同一个类中，以及扩展中和嵌套类中访问到（不被其他类型）。 private(set) 表示只读属性
+
+protocol Account {
+  associatedtype Currency
+
+  var balance: Currency { get }
+  func deposit(amount: Currency)
+  func withdraw(amount: Currency)
+}
+
+typealias Dollars = Double
+
+/// A U.S. Dollar based "basic" account.
+class BasicAccount: Account {
+
+  var balance: Dollars = 0.0
+
+  func deposit(amount: Dollars) {
+    balance += amount
+  }
+
+  func withdraw(amount: Dollars) {
+    if amount <= balance {
+      balance -= amount
+    } else {
+      balance = 0
+    }
+  }
+}
+
+class CheckingAccount: BasicAccount {
+  private let accountNumber = UUID().uuidString
+
+  class Check {
+    let account: String
+    var amount: Dollars
+    private(set) var cashed = false //private(set)
+
+    func cash() {
+      cashed = true
+    }
+
+    init(amount: Dollars, from account: CheckingAccount) {
+      self.amount = amount
+      self.account = account.accountNumber //嵌套类访问外部的私有属性
+    }
+  }
+}
+
+// 19.2 文件私有权限fileprivate：它允许访问与实体在同一文件中编写的任何代码（不被其他文件访问）
+// 19.3 internal 表示可以从定义实体的软件模块中的任何位置访问实体
+// 19.4 public 表示它的模块外部的代码可以看到和使用的实体。（只能访问）
+// 19.5 open 在public的基础上允许覆写改模块的代码（覆写，访问）
+// 19.6 将代码组织成扩展，将访问修饰符应用于扩展本身，这将帮助您将整个代码段分类为public、internal或private.
+//      当您将访问修饰符应用于扩展时，扩展的所有成员都会获得该访问级别。
+// 下私有扩展：
+/*
+private extension CheckingAccount {
+  func inspectForFraud(with checkNumber: Int) -> Bool {
+    issuedChecks.contains(checkNumber)
+  }
+
+  func nextNumber() -> Int {
+    let next = currentCheck
+    currentCheck += 1
+    return next
+  }
+}
+ //此扩展名标记为private. 扩展将private其所有成员隐式表示为private
+*/
+
+
+
+
+
+
 
 
 
