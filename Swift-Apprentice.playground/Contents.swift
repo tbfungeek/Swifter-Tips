@@ -1733,7 +1733,110 @@ do {
  
  */
 
-// 二十四. 内存管理 【TODO】
+// 二十四. 内存管理
+// 24.1 弱引用
+// 弱引用是在对象的所有权中不扮演任何角色的引用。使用它们的好处是它们会自动检测底层对象何时消失。
+// 这种自动检测就是为什么您总是使用可选类型声明它们的原因。一旦引用计数达到零，它们就会变为 nil
+// weak var editor: Editor?
+// 24.2 无主引用
+// 它的行为很像弱引用，因为它们不会更改对象的引用计数。
+// 然而，与弱引用不同，它们总是期望有一个值——你不能将它们声明为可选项。可以这样想：没有作者就不可能存在教程。必须有人为编辑写红线。:] 同时，教程不“拥有”作者，所以引用应该是无主的。
+
+/*
+class Tutorial {
+  let title: String
+  let author: Author
+  weak var editor: Editor?
+
+  init(title: String, author: Author) {
+    self.title = title
+    self.author = author
+  }
+  
+  deinit {
+    print("Goodbye tutorial \(title)!")
+  }
+}
+
+class Author {
+  let name: String
+  var tutorials: [Tutorial] = []
+
+  init(name: String) {
+    self.name = name
+  }
+
+  deinit {
+    print("Goodbye author \(name)!")
+  }
+}
+ 
+ do {
+   let author = Author(name: "Cosmin")
+   let tutorial = Tutorial(title: "Memory management",
+                           author: author)
+   let editor = Editor(name: "Ray")
+   author.tutorials.append(tutorial)
+   tutorial.editor = editor
+   editor.tutorials.append(tutorial)
+ }
+ */
+
+/*
+class Tutorial {
+  unowned let author: Author
+  // original code
+}
+ */
+
+// 24.3 捕获列表
+// 捕获列表是由闭包捕获的变量列表，并出现在闭包的开头任何参数之前。
+
+var counter = 0
+var g = {print(counter)}
+counter = 1
+g()
+
+//g()闭包打印变量的counter更新值 1，因为它具有对counter变量的引用
+
+counter = 0
+g = {[counter] in print(counter)}
+counter = 1
+g()
+
+//在这种g()情况下，闭包也会打印 0，因为counter它是一个阴影副本。
+//捕获列表将导致闭包捕获并存储存储在具有引用类型的捕获变量中的当前引用。通过此引用对对象所做的更改在闭包之外仍然可见
+
+// 24.4 unowned self
+
+/*
+lazy var description: () -> String = {
+  [unowned self] in
+  "\(self.title) by \(self.author.name)"
+}
+*/
+
+// 24.5 weak self
+
+/*
+ lazy var description: () -> String = {
+   [weak self] in
+   "\(self?.title) by \(self?.author.name)"
+ }
+ */
+
+// 24.6 weak strong dance
+
+/*
+lazy var description: () -> String = {
+    [weak self] in
+    guard let self = self else {
+      return "The tutorial is no longer available."
+    }
+    return "\(self.title) by \(self.author.name)"
+}*/
+
+
 
 // 二十五. 并发 【TODO】
 
