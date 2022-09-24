@@ -142,6 +142,8 @@ print(dy)
 
 // 五.3 集合类型
 
+// 五.4 值类型和引用类型 【TODO】
+
 // 六 类型别名
 typealias AnimalName = String
 var dogName: AnimalName = "didi"
@@ -794,12 +796,11 @@ Math.factorial(of: 6) // 720
 // as?: 尝试性转换，转换失败会返回nil
 // as!: 强行转换，转换失败会崩溃
 
+// 十六. 枚举 【TODO】
 
-// 十六. 枚举
+// 十七. 协议 【TODO】 高级协议 面向协议编程
 
-// 十七. 协议
-
-// 十八. 泛型
+// 十八. 泛型  【TODO】 高级泛型
 
 // 十九. 访问控制
 // 19.1 private 只能被同一个类中，以及扩展中和嵌套类中访问到（不被其他类型）。 private(set) 表示只读属性
@@ -873,7 +874,868 @@ private extension CheckingAccount {
  //此扩展名标记为private. 扩展将private其所有成员隐式表示为private
 */
 
+// 二十. 自定义运算符
+// 20.1 操作符重载
+/*
+func * (left: String, right: Int) -> String {
+  
+    if right <= 0 {
+        return ""
+    }
+    var result = left
+    for _ in 1..<right {
+        result += left
+    }
+    return result
+}
 
+print("a" * 6)
+ */
+// 20.1 定义操作符的要求：通常最好坚持使用字符/, =, -, +, !, *, %, <, >, &, |,^和?，尽管允许使用许多其他 Unicode 字符。您可能需要经常输入，所以击键越少越好。
+// 20.2 precedencegroup定义了一个操作符优先级别
+precedencegroup CustomerPrecedence {
+  /// 优先从左向右， left, right or none
+  associativity: left //associativity 定义了结合律，即如果多个同类的操作符顺序出现的计算顺序。
+  higherThan: MultiplicationPrecedence//优先级，比乘法运算高，运算的优先级，乘法运算是优先于加减运算的。除了 higherThan，也支持使用 lowerThan 来指定优先级低于某个其他组。
+  // lowerThan: AdditionPrecedence // 优先级, 比加法运算低
+  assignment: false // 是否是赋值运算
+}
+
+// 20.3 设置优先级
+// 继承 CustomerPrecedence 优先级组，也可以继承已有优先级组 AdditionPrecedence等
+infix operator **: CustomerPrecedence
+// infix 表示要定义的是一个中位操作符，即前后都是输入；其他的修饰子还包括 prefix 和 postfix，感兴趣的可以尝试一下；
+
+// 20.4 在扩展类里写实现，或者自定义类
+// 用**运算符定义一个数的平方。
+extension Int {
+static func ** (lhs: Int, rhs: Int) -> Int {
+    return Int(pow(Double(lhs), Double(rhs)))
+ }
+}
+print(10**2)// 100
+
+// 20.5 整体例子
+precedencegroup BLCustomerPrecedence {
+  /// 优先从左向右， left, right or none
+  associativity: left
+  //    higherThan: MultiplicationPrecedence//优先级，比乘法运算高
+  //    lowerThan: AdditionPrecedence       // 优先级, 比加法运算低
+  assignment: false                   // 是否是赋值运算
+}
+
+infix operator ~~: BLCustomerPrecedence
+
+extension String {
+
+  static func ~~ (left: String, right: String) -> String {
+         return left + right
+    }
+}
+print("12112"~~"~~")
+
+// 二十一. 下标操作
+
+// 21.1 基本定义
+/*
+ subscript(parameterList) -> ReturnType {
+   get {
+     // return someValue of ReturnType
+   }
+  
+   set(newValue) {
+     // set someValue of ReturnType to newValue
+   }
+ }
+*/
+//下标的原型看起来像一个函数的签名：它有一个参数列表和一个返回类型
+//下标可能有可变参数并且可以抛出错误但不能使用inout或默认参数。
+//下标的主体看起来像一个计算属性：它有一个 getter 和一个 setter。setter 是可选的，因此下标可以是读写的或只读的
+//你可以省略setter的newValue默认参数；它的类型与下标的返回类型相同。仅当您想将其名称更改为其他名称时才声明它。
+
+class Person {
+  let name: String
+  let age: Int
+
+  init(name: String, age: Int) {
+    self.name = name
+    self.age = age
+  }
+}
+
+extension Person {
+  subscript(key: String) -> String? {
+    switch key {
+      case "name": return name
+      case "age": return "\(age)"
+      default: return nil
+    }
+  }
+}
+
+let me = Person(name: "Cosmin", age: 36)
+me["name"]
+me["age"]
+me["gender"]
+
+// 21.2 下标参数
+// 调用下标时不必为下标参数使用名称，即使在声明它们时不使用下划线也是如此。
+// 如果您想更具体，请添加外部参数名称
+
+/*
+subscript(property key: String) -> String? {
+  // original code
+}
+
+me[property: "name"]
+me[property: "age"]
+me[property: "gender"]
+*/
+
+// 21.3 静态下标
+// 可以在 Swift 中为自定义类型定义静态下标
+
+/*
+class File {
+  let name: String
+  
+  init(name: String) {
+    self.name = name
+  }
+  
+  // 1
+  static subscript(key: String) -> String {
+    switch key {
+      case "path": return "custom path"
+      default: return "default path"
+    }
+  }
+}
+
+// 2
+File["path"]
+File["PATH"]
+*/
+
+// 21.4 动态成员查找
+
+// 为类型提供任意点语法
+@dynamicMemberLookup
+class Instrument {
+  let brand: String
+  let year: Int
+  private let details: [String: String]
+  
+  init(brand: String, year: Int, details: [String: String]) {
+    self.brand = brand
+    self.year = year
+    self.details = details
+  }
+  
+  // 2
+  subscript(dynamicMember key: String) -> String {
+    switch key {
+      case "info": return "\(brand) made in \(year)."
+      default: return details[key] ?? ""
+    }
+  }
+}
+
+// 3
+let instrument = Instrument(brand: "Roland", year: 2021,
+                            details: ["type": "acoustic",
+                                      "pitch": "C"])
+instrument.info
+instrument.pitch
+
+// 21.5 键路径
+// 21.5.1 键路径使您能够存储对属性的引用
+class Tutorial {
+  let title: String
+  let author: Person
+  let details: (type: String, category: String)
+  
+  init(title: String, author: Person,
+       details: (type: String, category: String)) {
+    self.title = title
+    self.author = author
+    self.details = details
+  }
+}
+
+let tutorial = Tutorial(title: "Object Oriented Programming in Swift",
+                        author: me,
+                        details: (type: "Swift",
+                                  category: "iOS"))
+
+let title = \Tutorial.title
+let tutorialTitle = tutorial[keyPath: title]
+
+let type = \Tutorial.details.type //为元组使用键路径
+let tutorialType = tutorial[keyPath: type]
+
+// 21.5.2 附加键路径
+//let authorPath = \Tutorial.author
+//let authorNamePath = authorPath.appending(path: \.name)
+//tutorialAuthor = tutorial[keyPath: authorNamePath]
+
+// 21.5.3 设置属性
+// 键路径可以更改属性值
+
+class Jukebox {
+  var song: String
+  
+  init(song: String) {
+    self.song = song
+  }
+}
+
+let jukebox = Jukebox(song: "Nothing Else Matters")
+
+let song = \Jukebox.song
+jukebox[keyPath: song] = "Stairway to Heaven"
+
+// 21.5.4 键路径成员查找
+
+/*
+// 1
+struct Point {
+  let x, y: Int
+}
+
+// 2
+@dynamicMemberLookup
+struct Circle {
+  let center: Point
+  let radius: Int
+  
+  // 3
+  subscript(dynamicMember keyPath: KeyPath<Point, Int>) -> Int {
+    center[keyPath: keyPath]
+  }
+}
+
+// 4
+let center = Point(x: 1, y: 2)
+let circle = Circle(center: center, radius: 1)
+circle.x
+circle.y
+*/
+
+// 21.6 键路径作为函数
+//如果函数是只有一个参数的闭包并且键路径的返回类型与闭包的返回类型匹配，则可以将键路径用作函数：
+let anotherTutorial = Tutorial(title: "Encoding and Decoding in Swift",
+                               author: me,
+                               details: (type: "Swift",
+                                         category: "iOS"))
+let tutorials = [tutorial, anotherTutorial]
+let titles = tutorials.map(\.title)
+
+// 二十二. 模式匹配
+// 模式提供了匹配值的规则
+// 可以在if/guard/switch case 以及 while和for
+// 22.1 场景 1 if guard
+
+/*
+func process(point: (x: Int, y: Int, z: Int)) -> String {
+  if case (0, 0, 0) = point {
+    return "At origin"
+  }
+  return "Not at origin"
+}
+
+let point = (x: 0, y: 0, z: 0)
+let status = process(point: point) // At origin
+
+
+func process(point: (x: Int, y: Int, z: Int)) -> String {
+  guard case (0, 0, 0) = point else {
+    return "Not at origin"
+  }
+  // guaranteed point is at the origin
+  return "At origin"
+}*/
+
+// 22.2 场景 2 switch
+
+/*
+func process(point: (x: Int, y: Int, z: Int)) -> String {
+  // 1
+  let closeRange = -2...2
+  let midRange = -5...5
+  // 2
+  switch point {
+  case (0, 0, 0):
+    return "At origin"
+  case (closeRange, closeRange, closeRange):
+    return "Very close to origin"
+  case (midRange, midRange, midRange):
+    return "Nearby origin"
+  default:
+    return "Not near origin"
+  }
+}
+
+let point = (x: 15, y: 5, z: 3)
+let status = process(point: point) // Not near origin
+*/
+
+// 22.3 场景 3 for
+
+let groupSizes = [1, 5, 4, 6, 2, 1, 3]
+for case 6 in groupSizes {
+  print("Found an individual") // 2 times
+}
+
+//上面代码每次找出6的时候会进入花括号的代码
+
+// 22.4 场景 4 枚举场景
+
+/*
+enum Direction {
+  case north, south, east, west
+}
+
+let heading = Direction.north
+
+if case .north = heading {
+  print("Don’t forget your jacket") // Printed!
+}
+
+//------------------------------
+enum Organism {
+  case plant
+  case animal(legs: Int)
+}
+
+let pet = Organism.animal(legs: 4)
+
+switch pet {
+case .animal(let legs):
+  print("Potentially cuddly with \(legs) legs") // Printed: 4
+default:
+  print("No chance for cuddles")
+}
+
+*/
+
+// 22.5 场景 5 非可选匹配
+let namess: [String?] =
+  ["Michelle", nil, "Brandon", "Christine", nil, "David"]
+
+// 找出非可选的进入
+for case let name? in namess {
+  print(name) // 4 times
+}
+
+// 22.6 场景 6 is 模式
+
+let response: [Any] = [15, "George", 2.0]
+
+for element in response {
+ switch element {
+ case is String:
+   print("Found a string") // 1 time
+ default:
+   print("Found something else") // 2 times
+ }
+}
+
+// 22.7 场景 7 as 模式
+
+for element in response {
+ switch element {
+ case let text as String:
+   print("Found a string: \(text)") // 1 time
+ default:
+   print("Found something else") // 2 times
+ }
+}
+
+// 22.8 场景 8 where 模式
+for number in 1...9 {
+  switch number {
+  case let x where x % 2 == 0:
+    print("even") // 4 times
+  default:
+    print("odd") // 5 times
+  }
+}
+
+enum LevelStatus {
+  case complete
+  case inProgress(percent: Double)
+  case notStarted
+}
+
+let levels: [LevelStatus] =
+  [.complete, .inProgress(percent: 0.9), .notStarted]
+
+for level in levels {
+  switch level {
+  case .inProgress(let percent) where percent > 0.8 :
+    print("Almost there!")
+  case .inProgress(let percent) where percent > 0.5 :
+    print("Halfway there!")
+  case .inProgress(let percent) where percent > 0.2 :
+    print("Made it through the beginning!")
+  default:
+    break
+  }
+}
+
+struct Rectangle {
+  let width: Int
+  let height: Int
+  let background: String
+}
+
+let view = Rectangle(width: 15, height: 60, background: "Green")
+switch view {
+case _ where view.height < 50:
+  print("Shorter than 50 units")
+case _ where view.width > 20:
+  print("Over 50 tall, & over 20 wide")
+case _ where view.background == "Green":
+  print("Over 50 tall, at most 20 wide, & green") // Printed!
+default:
+  print("This view can’t be described by this example")
+}
+
+// 22.9 场景 9 用逗号链接
+func timeOfDayDescription(hour: Int) -> String {
+  switch hour {
+  case 0, 1, 2, 3, 4, 5:
+    return "Early morning"
+  case 6, 7, 8, 9, 10, 11:
+    return "Morning"
+  case 12, 13, 14, 15, 16:
+    return "Afternoon"
+  case 17, 18, 19:
+    return "Evening"
+  case 20, 21, 22, 23:
+    return "Late evening"
+  default:
+    return "INVALID HOUR!"
+  }
+}
+let timeOfDay = timeOfDayDescription(hour: 12) // Afternoon
+
+/*
+if case .animal(let legs) = pet, case 2...4 = legs {
+  print("potentially cuddly") // Printed!
+} else {
+  print("no chance for cuddles")
+}
+ */
+
+// 22.10 场景 10 自定义元组
+
+//将名称和年龄常量组合成一个元组并一起评估它们
+/*
+let name = "Bob"
+let age = 23
+
+if case ("Bob", 23) = (name, age) {
+  print("Found the right Bob!") // Printed!
+}*/
+
+var username: String?
+var password: String?
+
+switch (username, password) {
+case let (username?, password?):
+  print("Success! User: \(username) Pass: \(password)")
+case let (username?, nil):
+  print("Password is missing. User: \(username)")
+case let (nil, password?):
+  print("Username is missing. Pass: \(password)")
+case (nil, nil):
+  print("Both username and password are missing")  // Printed!
+}
+
+// 22.11 通配符规则
+// 使用下划线来匹配分量的任何值
+// 值绑定，只需在匹配模式时使用varorlet来声明变量或常量
+// 如果你想绑定多个值，你可以写let多次，或者更好的是，移动let元组的外部：
+/*
+ if case (let x, 0, 0) = coordinate {
+   print("On the x-axis at \(x)") // Printed: 1
+ }
+ 
+ if case let (x, y, 0) = coordinate {
+   print("On the x-y plane at (\(x), \(y))") // Printed: 1, 0
+ }
+*/
+
+// 22.12 模式表达式
+// 使用模式匹配运算符比较值~=。当比较返回时匹配成功true
+// 如果值是相同的类型，并且实现了Equatable协议，则通用==相等运算符执行比较
+// 当值的类型不同或类型未实现Equatable协议时，将~=使用模式匹配运算符
+// 模式必须在运算符的左侧，而值必须在运算符的右侧
+// 默认情况下～=表示一个整数值是否在一个范围内
+let matched = (1...10 ~= 5) // true
+// 对于其他情况可以通过重载~=来自定义表达式匹配行为
+
+let list = [0, 1, 2, 3]
+let integer = 2
+
+let isInArray = (list ~= integer) // Error!
+
+if case list = integer { // Error!
+  print("The integer is in the array")
+} else {
+  print("The integer is not in the array")
+}
+
+// 1
+func ~=(pattern: [Int], value: Int) -> Bool {
+  // 2
+  for i in pattern {
+    if i == value {
+      // 3
+      return true
+    }
+  }
+  // 4
+  return false
+}
+
+
+// 二十三. 错误处理 【TODO】
+
+// 23.1 使用Options作为最优先处理策略
+// 23.1.1 可失败的初始化器
+struct PetHouse {
+  let squareFeet: Int
+  
+  init?(squareFeet: Int) {
+    if squareFeet < 1 {
+      return nil
+    }
+    self.squareFeet = squareFeet
+  }
+}
+
+let tooSmall = PetHouse(squareFeet: 0) // nil
+let house = PetHouse(squareFeet: 1)    // Optional(Pethouse)
+
+// 23.1.2 可选链
+
+/*
+class Pet {
+  var breed: String?
+
+  init(breed: String? = nil) {
+    self.breed = breed
+  }
+}
+
+class Person {
+  let pet: Pet
+
+  init(pet: Pet) {
+    self.pet = pet
+  }
+}
+
+let delia = Pet(breed: "pug")
+let olive = Pet()
+
+let janie = Person(pet: olive)
+let dogBreed = janie.pet.breed! // This is bad! Will cause a crash!
+*/
+
+
+/*
+class Toy {
+  enum Kind {
+    case ball, zombie, bone, mouse
+  }
+
+  enum Sound {
+    case squeak, bell
+  }
+
+  let kind: Kind
+  let color: String
+  var sound: Sound?
+
+  init(kind: Kind, color: String, sound: Sound? = nil) {
+    self.kind = kind
+    self.color = color
+    self.sound = sound
+  }
+}
+
+class Pet {
+
+  enum Kind {
+    case dog, cat, guineaPig
+  }
+
+  let name: String
+  let kind: Kind
+  let favoriteToy: Toy?
+
+  init(name: String, kind: Kind, favoriteToy: Toy? = nil) {
+    self.name = name
+    self.kind = kind
+    self.favoriteToy = favoriteToy
+  }
+}
+
+class Person {
+  let pet: Pet?
+
+  init(pet: Pet? = nil) {
+    self.pet = pet
+  }
+}
+
+let janie = Person(pet: Pet(name: "Delia", kind: .dog,
+                   favoriteToy: Toy(kind: .ball,
+                   color: "Purple", sound: .bell)))
+let tammy = Person(pet: Pet(name: "Evil Cat Overlord",
+                   kind: .cat, favoriteToy: Toy(kind: .mouse,
+                   color: "Orange")))
+let felipe = Person()
+
+//如果链的任何值是nil，结果也将是nil
+if let sound = janie.pet?.favoriteToy?.sound {
+  print("Sound \(sound).")
+} else {
+  print("No sound.")
+}
+ 
+*/
+
+// 23.1.3 compactMap 过滤nil
+
+/*
+ 
+ let team = [janie, tammy, felipe]
+ let betterPetNames = team.compactMap { $0.pet?.name }
+
+ for pet in betterPetNames {
+   print(pet)
+ }
+ */
+
+// 23.2 使用Error
+// 23.2.1 错误协议定义
+class Pastry {
+  let flavor: String
+  var numberOnHand: Int
+
+  init(flavor: String, numberOnHand: Int) {
+    self.flavor = flavor
+    self.numberOnHand = numberOnHand
+  }
+}
+
+enum BakeryError: Error {
+  case tooFew(numberOnHand: Int), doNotSell, wrongFlavor
+  case inventory, noPower
+}
+
+// 23.2.2 抛出错误
+
+class Bakery {
+  var itemsForSale = [
+    "Cookie": Pastry(flavor: "ChocolateChip", numberOnHand: 20),
+    "PopTart": Pastry(flavor: "WildBerry", numberOnHand: 13),
+    "Donut" : Pastry(flavor: "Sprinkles", numberOnHand: 24),
+    "HandPie": Pastry(flavor: "Cherry", numberOnHand: 6)
+  ]
+  
+  func open(_ now: Bool = Bool.random()) throws -> Bool {
+    guard now else {
+      throw Bool.random() ? BakeryError.inventory
+                          : BakeryError.noPower
+    }
+    return now
+  }
+
+  func orderPastry(item: String,
+                   amountRequested: Int,
+                   flavor: String)  throws  -> Int {
+    guard let pastry = itemsForSale[item] else {
+      throw BakeryError.doNotSell
+    }
+    guard flavor == pastry.flavor else {
+      throw BakeryError.wrongFlavor
+    }
+    guard amountRequested <= pastry.numberOnHand else {
+      throw BakeryError.tooFew(numberOnHand:
+                               pastry.numberOnHand)
+    }
+    pastry.numberOnHand -= amountRequested
+
+    return pastry.numberOnHand
+  }
+}
+
+// 23.2.3 捕获异常
+
+// 23.2.3.1 详细处理异常
+
+/*
+do {
+  try bakery.open()
+  try bakery.orderPastry(item: "Albatross",
+                          amountRequested: 1,
+                          flavor: "AlbatrossFlavor")
+} catch BakeryError.inventory, BakeryError.noPower {
+  print("Sorry, the bakery is now closed.")
+} catch BakeryError.doNotSell {
+  print("Sorry, but we don’t sell this item.")
+} catch BakeryError.wrongFlavor {
+  print("Sorry, but we don’t carry this flavor.")
+} catch BakeryError.tooFew {
+  print("Sorry, we don’t have enough items to fulfill your
+         order.")
+}
+*/
+
+// 23.2.3.2 不处理异常
+/*
+let open = try? bakery.open(false)
+let remaining = try? bakery.orderPastry(item: "Albatross",
+                                        amountRequested: 1,
+                                        flavor: "AlbatrossFlavor")
+*/
+
+// 23.2.3.3 出现错误的时候停止程序
+/*
+do {
+  try bakery.open(true)
+  try bakery.orderPastry(item: "Cookie",
+                         amountRequested: 1,
+                         flavor: "ChocolateChip")
+}
+catch {
+  fatalError()
+}
+ 
+ 
+try! bakery.open(true)
+try! bakery.orderPastry(item: "Cookie", amountRequested: 1,
+                     flavor: "ChocolateChip")
+
+ */
+
+// 23.2.3.4 重新抛出错误
+
+/*
+ func perform(times: Int, movement: () throws -> ()) rethrows {
+   for _ in 1...times {
+     try movement()
+   }
+ }
+ */
+//rethrows表示它只会重新抛出传递给它的闭包抛出的错误，它永远不会抛出它自己的错误。
+
+// 23.2.4 可抛出属性与下标
+
+/*
+// 1
+class Person {
+  var name: String
+  var age: Int
+  
+  init(name: String, age: Int) {
+    self.name = name
+    self.age = age
+  }
+}
+
+// 2
+enum PersonError: Error {
+  case noName, noAge, noData
+}
+
+// 3
+extension Person {
+  var data: String {
+    get throws {
+      guard !name.isEmpty else {throw PersonError.noName}
+      guard age > 0 else {throw PersonError.noAge}
+      return "\(name) is \(age) years old."
+    }
+  }
+}
+ */
+
+/*
+let me = Person(name: "Cosmin", age: 36)
+
+me.name = ""
+do {
+  try me.data
+} catch {
+  print(error) // "noName"
+}
+
+me.age = -36
+do {
+  try me.data
+} catch {
+  print(error) // "noName"
+}
+
+me.name = "Cosmin"
+do {
+  try me.data
+} catch {
+  print(error) // "noAge"
+}
+
+me.age = 36
+do {
+  try me.data // "Cosmin is 36 years old."
+} catch {
+  print(error)
+}
+ */
+
+/*
+ 
+ extension Person {
+   subscript(key: String) -> String {
+     get throws {
+       switch key {
+         case "name": return name
+         case "age": return "\(age)"
+         default: throw PersonError.noData
+       }
+     }
+   }
+ }
+
+ do {
+   try me["name"] // "Cosmin"
+ } catch {
+   print(error)
+ }
+
+ do {
+   try me["age"] // "36"
+ } catch {
+   print(error)
+ }
+
+ do {
+   try me["gender"]
+ } catch {
+   print(error) // "noData"
+ }
+ 
+ */
+
+// 二十四. 内存管理 【TODO】
+
+// 二十五. 并发 【TODO】
 
 
 
