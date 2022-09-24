@@ -1840,12 +1840,211 @@ lazy var description: () -> String = {
 
 // 二十五. 并发 【TODO】
 
+// 25.1 创建任务
+
+Task {
+  print("Doing some work on a task")
+  let sum = (1...100).reduce(0, +)
+  print("1 + 2 + 3 ... 100 = \(sum)")
+}
+
+print("Doing some work on the main actor")
+
+// 25.2 取消任务
+
+let task = Task {
+  print("Doing some work on a task")
+  let sum = (1...100).reduce(0, +)
+  try Task.checkCancellation()
+  print("1 + 2 + 3 ... 100 = \(sum)")
+}
+
+print("Doing some work on the main actor")
+task.cancel()
+
+// 25.3 暂停任务
+
+Task {
+  print("Hello")
+  try await Task.sleep(nanoseconds: 1_000_000_000)
+  print("Goodbye")
+}
+
+// 25.4 异步方法
+
+func helloPauseGoodbye() async throws {
+  print("Hello")
+  try await Task.sleep(nanoseconds: 1_000_000_000)
+  print("Goodbye")
+}
+
+Task {
+  try await helloPauseGoodbye()
+}
+
+// 25.4 并发任务
+
+/*
+func findTitlesSerial(first: URL, second: URL) async throws -> (String?,
+                                                                String?) {
+  let title1 = try await findTitle(url: first)
+  let title2 = try await findTitle(url: second)
+  return (title1, title2)
+}
+ */
+//两个任务顺序执行
+
+/*
+func findTitlesParallel(first: URL, second: URL) async throws -> (String?,
+                                                                  String?) {
+  async let title1 = findTitle(url: first)   // 1
+  async let title2 = findTitle(url: second)  // 2
+  let titles = try await [title1, title2]    // 3
+  return (titles[0], titles[1])              // 4
+}
+*/
+//两个任务并行执行
+
+// 25.4.1 异步属性
+
+/*
+extension Domains {
+  static var domains: [Domain] {
+    get async throws {
+      try await fetchDomains()
+    }
+  }
+}
+ 
+Task {
+ dump(try await Domains.domains)
+}
+*/
 
 
+// 25.4.2 异步下标
 
+/*
+ extension Domains {
+   enum Error: Swift.Error { case outOfRange }
 
+   static subscript(_ index: Int) -> String {
+     get async throws {
+       let domains = try await Self.domains
+       guard domains.indices.contains(index) else {
+         throw Error.outOfRange
+       }
+       return domains[index].attributes.name
+     }
+   }
+ }
 
+ Task {
+   dump(try await Domains[4])  // "Unity", as of this writing
+ }
 
+ */
+
+// 25.4.3 异步序列
+
+/*
+ func findTitle(url: URL) async throws -> String? {
+   for try await line in url.lines {
+     if line.contains("<title>") {
+       return line.trimmingCharacters(in: .whitespaces)
+     }
+   }
+   return nil
+ }
+ */
+
+// 25.5 Anchor
+// Anchor 用于解决资源竞争问题
+// Swift 并发包括特殊类型actor和Sendable来处理这个一致性问题。
+
+// 1
+class Playlist {
+  let title: String
+  let author: String
+  private(set) var songs: [String]
+  
+  init(title: String, author: String, songs: [String]) {
+    self.title = title
+    self.author = author
+    self.songs = songs
+  }
+  
+  func add(song: String) {
+    songs.append(song)
+  }
+  
+  func remove(song: String) {
+    guard !songs.isEmpty, let index = songs.firstIndex(of: song) else {
+      return
+    }
+    songs.remove(at: index)
+  }
+  
+  func move(song: String, from playlist: Playlist) {
+    playlist.remove(song: song)
+    add(song: song)
+  }
+  
+  func move(song: String, to playlist: Playlist) {
+    playlist.add(song: song)
+    remove(song: song)
+  }
+}
+
+//这个类有四个改变状态的方法songs。这些方法不能同时使用。如果您让它们并发，您将有多个任务同时更改播放列表，从而导致不可预测且不一致的状态。
+//您可以通过将类转换为actor来解决此问题。与类一样，actor 是表示共享可变状态的引用类型。重要的是，参与者阻止并发访问他们的状态。它们只允许一种方法在任何给定时间访问它们的状态。
+
+// 25.5.1 将类转换为Anchor
+
+/*
+ // 1
+ actor Playlist {
+   let title: String
+   let author: String
+   private(set) var songs: [String]
+   
+   init(title: String, author: String, songs: [String]) {
+     self.title = title
+     self.author = author
+     self.songs = songs
+   }
+   
+   func add(song: String) {
+     songs.append(song)
+   }
+   
+   func remove(song: String) {
+     guard !songs.isEmpty, let index = songs.firstIndex(of: song) else {
+       return
+     }
+     songs.remove(at: index)
+   }
+   
+   // 3
+   func move(song: String, from playlist: Playlist) async {
+     // 2
+     await playlist.remove(song: song)
+     add(song: song)
+   }
+   
+   func move(song: String, to playlist: Playlist) async {
+     await playlist.add(song: song)
+     remove(song: song)
+   }
+ }
+ 以下是更改的内容：
+ 关键字actor替换关键字class。
+ 两者move(song:from:)都有move(song:to:)一个附加Playlist参数。此参数意味着它们对两个参与者进行操作：self和playlist。您必须使用awaitto 访问playlist，因为这些方法可能必须等待轮到它们才能获得对参与者的同步访问playlist。
+ 因为move(song:from:)并在它们的实现中move(song:to:)使用await，您必须将它们标记为async. 所有的actor方法已经隐式异步了，但是实现强制它在这里是显式的。
+ */
+
+// 25.5.2 nonisolated
+// nonisolated关键字通过禁用参与者的同步功能使该属性同步
 
 
 
