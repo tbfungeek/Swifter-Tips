@@ -1,5 +1,7 @@
 import UIKit
 
+// ReadNote of https://www.raywenderlich.com/books/swift-apprentice
+
 var greeting = "Hello, playground"
 
 
