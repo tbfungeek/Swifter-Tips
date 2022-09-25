@@ -1032,7 +1032,7 @@ for pet in Pet.allCases {
   print(pet)
 }
 
-// 十七. 协议 【TODO】 高级协议 面向协议编程
+// 十七. 协议
 // 17.1 协议不是也不能用于实例化对象的，而是用于约束和描述接口或者类的概要的。使用协议，可以定义一组通用的属性和行为，具体类型可以执行和实现。
 // 17.2 协议可以在类，结构，枚举，以及扩展中被采用
 // 使用扩展遵循的优点是，可以将协议采用与必要的方法和属性很好地分组，而不是让一堆协议使您的类型定义变得混乱。
@@ -1120,6 +1120,14 @@ class LightThing: WeightCalculatable {
   var weight: Double { 0.0025 }
 }
 //上面使用typealias指定了对应的关联类型，但是可以不指定的，通过类型推断可以自动推断
+
+// 17.4.6 将协议中的关联类型限制为特定类型
+/*
+protocol WeightCalculatable {
+  associatedtype WeightType: Numeric
+  var weight: WeightType { get }
+}
+*/
 
 // 17.5 实现多个协议
 
@@ -1326,8 +1334,6 @@ struct Employee: Codable {
      try container.encodeIfPresent(favoriteToy?.name, forKey: .gift) // 如果没有favoriteToy json中将不包含这个key
    }
  }
-
- 
  */
 
 // 17.8.7.2.2 解码
@@ -1355,6 +1361,99 @@ struct Employee: Codable {
  }
  */
 
+// 17.9 面向协议编程
+// 17.9.1 协议扩展
+// 扩展不但可以针对类,结构体，枚举，还可以这对协议创建扩展
+// 协议扩展让您可以编写协议的实现代码，甚至可以为协议所需的方法编写默认实现。
+// 协议扩展是面向协议编程的主要驱动力，让您可以编写适用于任何符合协议的类型的代码。
+
+protocol TeamRecord {
+  var wins: Int { get }
+  var losses: Int { get }
+  var winningPercentage: Double { get }
+}
+
+extension TeamRecord {
+  var gamesPlayed: Int {
+    wins + losses
+  }
+}
+//协议扩展一般用于对协议中的方法提供默认的实现
+// 尽管您还没有为采用该协议的具体类型编写代码，但您可以在其扩展中使用协议成员。那是因为编译器知道任何符合的类型都TeamRecord将具有TeamRecord.
+// 现在您可以编写一个简单的类型来采用TeamRecord和使用gamesPlayed而无需重新实现它。
+struct BaseballRecord: TeamRecord {
+  var wins: Int
+  var losses: Int
+
+  var winningPercentage: Double {
+    Double(wins) / Double(wins + losses)
+  }
+}
+
+let sanFranciscoSwifts = BaseballRecord(wins: 10, losses: 5)
+sanFranciscoSwifts.gamesPlayed // 15
+// 默认实现允许您向协议添加功能，同时显着减少重复或“样板”代码。默认实现不会阻止类型自行实现协议成员
+struct HockeyRecord: TeamRecord {
+  var wins: Int
+  var losses: Int
+  var ties: Int
+
+  // Hockey record introduces ties, and has
+  // its own implementation of winningPercentage
+  var winningPercentage: Double {
+    Double(wins) / Double(wins + losses + ties)
+  }
+}
+
+//HockeyRecord 为TeamRecord提供了自定义的winningPercentage，而不使用默认的winningPercentage
+
+// 17.9.2 类型约束
+// Swift 允许为某些采用类型编写扩展。在协议扩展上使用类型约束，您可以使用该类型的方法和属性。
+
+protocol PostSeasonEligible {
+  var minimumWinsForPlayoffs: Int { get }
+}
+
+extension TeamRecord where Self: PostSeasonEligible {
+  var isPlayoffEligible: Bool {
+    wins > minimumWinsForPlayoffs
+  }
+}
+
+//将类型约束应用于TeamRecord扩展意味着在扩展中，self已知是TeamRecord和PostSeasonEligible
+//这意味着我们可以使用在这两种类型上定义的属性和方法。还可以使用类型约束在特定类型组合上创建默认实现。
+//也就是说通过类型约束可以同时使用两个类型的属性和方法，以及在特定类型上创建默认实现
+
+protocol Tieable {
+  var ties: Int { get }
+}
+
+//With type constraints, you can also make a default implementation for winningPercentage,
+//specifically for types that are both a TeamRecord and Tieable:
+extension TeamRecord where Self: Tieable {
+  var winningPercentage: Double {
+    Double(wins) / Double(wins + losses + ties)
+  }
+}
+
+//Now, any type that is both a TeamRecord and Tieable won’t need to implement a winningPercentage that factors in ties:
+struct RugbyRecord: TeamRecord, Tieable {
+  var wins: Int
+  var losses: Int
+  var ties: Int
+  //这里就不需要实现winningPercentage了 因为TeamRecord中已经提供了
+}
+
+let rugbyRecord = RugbyRecord(wins: 8, losses: 7, ties: 1)
+rugbyRecord.winningPercentage // 0.5
+
+
+
+
+
+
+
+
 
 
 
@@ -1371,176 +1470,6 @@ struct Employee: Codable {
 
 
 /*
-
-
-协议
-一个协议可以被类、结构或枚举
-方法和属性。一旦一个类型实现了协议的所有成员，就称该类型符合协议。
-
-方法：
-protocol OptionalDirectionVehicle {
-  // Build error!
-  func turn(_ direction: Direction = .left)
-}
-
-属性：
-protocol VehicleProperties {
-  var/*只能为var*/ weight: Int/*一定要有类型*/ { get } /*get 或者 get set*/
-  /*遵循者可以是let类型*/                      /*遵循者可以是可读写型*/
-  var name: String { get set }
-}
-在协议中定义属性时，您必须将它们明确标记为get或get set
-即使该属性只有一个get要求，您仍然可以将其实现为存储属性或读写计算属性。协议中的要求只是最低要求。
-
-属性 + 方法 + 构造类型（required） + 协议继承 + 一个类实现多个协议 + 关联类型（只是说明了协议中使用了一种类型，而没有指定它应该是什么类型，由协议采用者决定确切的类型应该是什么。）
-+ 要求传入的参数满足多个属性 + 通过扩展实现协议 + 声明符合协议的变量
-+ 类协议 + Equatable/Comparable
-
-
-protocol Account:BaseType {
-  associatedtype WeightType
-  var weight: WeightType { get }
-  var value: Double { get set }
-  func accelerate()
-  func stop()
-  func turn(_ direction: Direction)
-  func description() -> String
-  init(initialAmount: Double)
-  init?(transferAccount: Account)
-}
-
-如果您使用类类型遵守具有所需初始化程序的协议，则这些初始化程序必须使用required关键字：
-
-class BitcoinAccount: Vehicle, Wheeled /*可以实现多个协议*/ {
-  var value: Double
-  required init(initialAmount: Double) {
-    value = initialAmount
-  }
-  required init?(transferAccount: Account) {
-    guard transferAccount.value > 0.0 else {
-      return nil
-    }
-    value = transferAccount.value
-  }
-}
-
-var accountType: Account.Type = BitcoinAccount.self
-let account = accountType.init(initialAmount: 30.00)
-let transferAccount = accountType.init(transferAccount: account)!
-
-protocol WheeledVehicle: Vehicle {
-  var numberOfWheels: Int { get }
-  var wheelSize: Double { get set }
-}
-
-实现get需求的选择是：
-一个常量存储属性。
-变量存储属性。
-只读计算属性。
-读写计算属性
-
-您对实现 aget和set属性的选择仅限于变量存储属性或读写计算属性。
-
-class HeavyThing: WeightCalculatable {
-  // This heavy thing only needs integer accuracy
-  typealias WeightType = Int //实现者指定类型
-
-  var weight: Int { 100 }
-}
-
-class LightThing: WeightCalculatable {
-  // This light thing needs decimal places
-  typealias WeightType = Double //实现者指定类型
-
-  var weight: Double { 0.0025 }
-}
-
-在这些示例中，您typealias习惯于明确关联类型。这种明确性通常不是必需的，因为编译器通常可以推断出类型。
-在前面的示例中，类型weight明确了关联类型应该是什么，以便您可以删除typealias.
-
-func roundAndRound(transportation: Vehicle & Wheeled) {
-    transportation.stop()
-    print("The brakes are being applied to
-          \(transportation.numberOfWheels) wheels.")
-}
-
-protocol Reflective {
-  var typeName: String { get }
-}
-
-extension String: Reflective {
-  var typeName: String {
-    "I’m a String"
-  }
-}
-
-let title = "Swift Apprentice!"
-title.typeName // I’m a String
-
-var named: Named = ClassyName(name: "Classy")
-
-protocol Named: AnyObject {
-  var name: String { get set }
-}
-
-protocol Equatable {
-  static func ==(lhs: Self, rhs: Self) -> Bool
-}
-
-class Student {
-  let email: String
-  let firstName: String
-  let lastName: String
-
-  init(email: String, firstName: String, lastName: String) {
-    self.email = email
-    self.firstName = firstName
-    self.lastName = lastName
-  }
-}
-
-extension Student: Hashable {
-  static func ==(lhs: Student, rhs: Student) -> Bool {
-    lhs.email == rhs.email &&
-    lhs.firstName == rhs.firstName &&
-    lhs.lastName == rhs.lastName
-  }
-
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(email)
-    hasher.combine(firstName)
-    hasher.combine(lastName)
-  }
-}
-The Hashable protocol, a subprotocol of Equatable
-is required for any type you want to use as a key to a Dictionary.
-Hash values help you quickly find elements in a collection. For this to work, values considered equal by == must also have the same hash value.
-
-
-Identifiable
-
-extension Student: Identifiable {
-  var id: String {
-    email
-  }
-}
-
-CustomStringConvertible
-
-protocol CustomStringConvertible {
-  var description: String { get }
-}
-
-extension Student: CustomStringConvertible {
-  var description: String {
-    "\(firstName) \(lastName)"
-  }
-}
-print(john)
-
-CustomDebugStringConvertible
-
-debugPrint
 
 class Keeper<Animal> {
 
