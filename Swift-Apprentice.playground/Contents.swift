@@ -1032,43 +1032,346 @@ for pet in Pet.allCases {
   print(pet)
 }
 
-
-
-
-
-
-
-
 // 十七. 协议 【TODO】 高级协议 面向协议编程
+// 17.1 协议不是也不能用于实例化对象的，而是用于约束和描述接口或者类的概要的。使用协议，可以定义一组通用的属性和行为，具体类型可以执行和实现。
+// 17.2 协议可以在类，结构，枚举，以及扩展中被采用
+// 使用扩展遵循的优点是，可以将协议采用与必要的方法和属性很好地分组，而不是让一堆协议使您的类型定义变得混乱。
+// 17.3 一旦一个类型实现了协议的所有成员，就称该类型遵循协议。
+// 17.4 协议定义 = 属性 + 初始化器 + 方法 + 继承
+// 17.4.1 协议中的属性
+// 在协议中定义属性时，您必须将它们明确标记为get或get set，有点类似于声明计算属性的方式。但是，与方法非常相似，您不包含任何属性实现。
+// 即使某个属性只有一个get要求，仍然可以将其实现为存储属性或读写计算属性。协议中的要求只是最低要求。
+// var numberOfWheels: Int { get } 可以与下面的类型对应
+// 一个常量存储属性。
+// 变量存储属性。
+// 只读计算属性。
+// 读写计算属性。
+protocol VehicleProperties {
+  var weight: Int { get }
+  var name: String { get set }
+}
+
+// 17.4.2 协议中的初始化器
+/*
+protocol Account {
+  var value: Double { get set }
+  init(initialAmount: Double)
+  init?(transferAccount: Account)
+}
+*/
+//如果使用类类型遵守具有所需初始化程序的协议，则这些初始化程序必须使用required关键字：
+/*
+ class BitcoinAccount: Account {
+   var value: Double
+   required init(initialAmount: Double) {
+     value = initialAmount
+   }
+   required init?(transferAccount: Account) {
+     guard transferAccount.value > 0.0 else {
+       return nil
+     }
+     value = transferAccount.value
+   }
+ }
+
+ var accountType: Account.Type = BitcoinAccount.self
+ let account = accountType.init(initialAmount: 30.00)
+ let transferAccount = accountType.init(transferAccount: account)!
+
+ */
+// 17.4.3 协议中的方法
+// 参数不能有默认值
+enum Direction {
+  case left
+  case right
+}
+
+protocol DirectionalVehicle {
+  func accelerate()
+  func stop()
+  func turn(_ direction: inout Direction)
+  func description() -> String
+}
+// 17.4.4 协议继承
+/*
+protocol WheeledVehicle: Vehicle {
+  var numberOfWheels: Int { get }
+  var wheelSize: Double { get set }
+}
+*/
+
+// 17.4.5 协议中的关联类型
+protocol WeightCalculatable {
+  associatedtype WeightType
+  var weight: WeightType { get }
+}
+
+class HeavyThing: WeightCalculatable {
+  // This heavy thing only needs integer accuracy
+  typealias WeightType = Int
+
+  var weight: Int { 100 }
+}
+
+class LightThing: WeightCalculatable {
+  // This light thing needs decimal places
+  typealias WeightType = Double
+
+  var weight: Double { 0.0025 }
+}
+//上面使用typealias指定了对应的关联类型，但是可以不指定的，通过类型推断可以自动推断
+
+// 17.5 实现多个协议
+
+/*
+protocol Wheeled {
+  var numberOfWheels: Int { get }
+  var wheelSize: Double { get set }
+}
+
+class Bike: Vehicle, Wheeled {
+  // Implement both Vehicle and Wheeled
+}
+*/
+
+// 17.6 协议组合
+// 有时您需要一个函数来获取必须符合多种协议的数据类型。这就是协议组合的用武之地
+/*
+ func roundAndRound(transportation: Vehicle & Wheeled) {
+     transportation.stop()
+     print("The brakes are being applied to
+           \(transportation.numberOfWheels) wheels.")
+ }
+
+ roundAndRound(transportation: Bike())
+ // The brakes are being applied to 2 wheels.
+*/
+
+// 17.7 只能类遵循的协议
+// 后面增加AnyObject即可
+protocol Named: AnyObject {
+  var name: String { get set }
+}
+
+// 17.8 常用的标准库协议
+// 17.8.1 Equatable
+// 对自定义类判断是否相等
+
+class Record {
+  
+  var wins: Int
+  var losses: Int
+    
+  init(wins: Int, losses: Int) {
+      self.wins = wins
+      self.losses = losses
+  }
+}
+
+extension Record: Equatable {
+  static func ==(lhs: Record, rhs: Record) -> Bool {
+    lhs.wins == rhs.wins &&
+    lhs.losses == rhs.losses
+  }
+}
+
+let recordA = Record(wins: 10, losses: 5)
+let recordB = Record(wins: 10, losses: 5)
+
+recordA == recordB
+
+// 17.8.2 Comparable
+// Comparable 是Equatable的子类
+
+protocol Comparable: Equatable {
+  static func <(lhs: Self, rhs: Self) -> Bool
+  static func <=(lhs: Self, rhs: Self) -> Bool
+  static func >=(lhs: Self, rhs: Self) -> Bool
+  static func >(lhs: Self, rhs: Self) -> Bool
+}
+
+/*
+extension Record: Comparable {
+  static func <(lhs: Record, rhs: Record) -> Bool {
+    if lhs.wins == rhs.wins {
+      return lhs.losses > rhs.losses
+    }
+    return lhs.wins < rhs.wins
+  }
+}
+*/
+
+// 17.8.3 Hashable
+// Hashable是Equatable的子类，想要作为Dictionary的key的时候就必须实现Hashable，可以通过Hashable协议快速找到集合中的元素
+/*
+class Student {
+  let email: String
+  let firstName: String
+  let lastName: String
+
+  init(email: String, firstName: String, lastName: String) {
+    self.email = email
+    self.firstName = firstName
+    self.lastName = lastName
+  }
+}
+
+extension Student: Hashable {
+  static func ==(lhs: Student, rhs: Student) -> Bool {
+    lhs.email == rhs.email &&
+    lhs.firstName == rhs.firstName &&
+    lhs.lastName == rhs.lastName
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(email)
+    hasher.combine(firstName)
+    hasher.combine(lastName)
+  }
+}*/
+
+// 17.8.4 Identifiable
+// Identifiable协议提供了一个独特的id属性，Identifiable只需要一个get名为id其类型必须为的属性Hashable。
+/*
+extension Student: Identifiable {
+  var id: String {
+    email
+  }
+}*/
+
+// 17.8.5 CustomStringConvertible
+// CustomStringConvertible协议可帮助您记录和调试实例。
+/*
+protocol CustomStringConvertible {
+  var description: String { get }
+}
+
+extension Student: CustomStringConvertible {
+  var description: String {
+    "\(firstName) \(lastName)"
+  }
+}
+print(john)
+// Johnny Appleseed
+*/
+//对应的CustomDebugStringConvertible定义了debugDescription在debugPrint()打印的时候输出
+
+// 17.8.6 CaseIterable
+// 遍历枚举的时候使用
+
+// 17.8.7 Encodable/Decodable
+
+// 17.8.7.1 对应协议介绍
+// (1) Encodable
+// func encode(to: Encoder) throws
+// (2) Decodable
+// init(from decoder: Decoder) throws
+
+// (3) Codable 意味着可以被编码和解码
+// typealias Codable = Encodable & Decodable
+// 如果希望你类型可编码，最简单的方法是遵守Codable并确保其所有存储的属性也是可编码的。
+
+struct Employee: Codable {
+  var name: String
+  var id: Int
+  var favoriteToy: Toy?
+}
+
+struct Toy: Codable {
+  var name: String
+}
+
+// (4) CodingKeys 重命名属性
+/*
+struct Employee: Codable {
+  var name: String
+  var id: Int
+  var favoriteToy: Toy?
+
+  enum CodingKeys: String, CodingKey {
+    case id = "employeeId" //将id 显示为employeeId
+    case name
+    case favoriteToy
+  }
+}
+ //如果打印 JSON，就会看到它id已更改为employeeId.
+ { "employeeId": 7, "name": "John Appleseed", "favoriteToy": {"name": "Teddy Bear"}}
+ */
+
+// 17.8.7.2 手动编码和解码
+// 17.8.7.2.1 编码
+
+/*
+ 更新CodingKeys以使用密钥gift而不是favoriteToy：
+ enum CodingKeys: String, CodingKey {
+   case id = "employeeId"
+   case name
+   case gift
+ }
+
+ extension Employee: Encodable {
+   func encode(to encoder: Encoder) throws {
+     var container = encoder.container(keyedBy: CodingKeys.self)
+     try container.encode(name, forKey: .name)
+     try container.encode(id, forKey: .id)
+     try container.encode(favoriteToy?.name, forKey: .gift)
+   }
+ }
+ 
+ extension Employee: Encodable {
+   func encode(to encoder: Encoder) throws {
+     var container = encoder.container(keyedBy: CodingKeys.self)
+     try container.encode(name, forKey: .name)
+     try container.encode(id, forKey: .id)
+     try container.encodeIfPresent(favoriteToy?.name, forKey: .gift) // 如果没有favoriteToy json中将不包含这个key
+   }
+ }
+
+ 
+ */
+
+// 17.8.7.2.2 解码
+/*
+ extension Employee: Decodable {
+   init(from decoder: Decoder) throws {
+     let values = try decoder.container(keyedBy: CodingKeys.self)
+     name = try values.decode(String.self, forKey: .name)
+     id = try values.decode(Int.self, forKey: .id)
+     if let gift = try values.decode(String?.self, forKey: .gift) {
+       favoriteToy = Toy(name: gift)
+     }
+   }
+ }
+ 
+ extension Employee: Decodable {
+   init(from decoder: Decoder) throws {
+     let values = try decoder.container(keyedBy: CodingKeys.self)
+     name = try values.decode(String.self, forKey: .name)
+     id = try values.decode(Int.self, forKey: .id)
+     if let gift = try values.decodeIfPresent(String.self, forKey: .gift) {
+       favoriteToy = Toy(name: gift)
+     }
+   }
+ }
+ */
+
+
+
+
+
+
+
+
+
+
+
+
 
 // 十八. 泛型  【TODO】 高级泛型
 
 
 /*
 
-
-if case/guard case   遍历所有案例
-
-enum HttpMethod {
-    case get
-    case post(body:String)
-}
-let postMethod = HttpMethod.post(body: "https://www.google.com")
-guard case .post(let body) = postMethod else {
-    return
-}
-print(body)
-
-enum Pet: CaseIterable {
-  case cat, dog, bird, turtle, fish, hamster
-}
-
-for pet in Pet.allCases {
-  print(pet)
-}
-
-
-与其他命名类型不同，协议不定义您直接实例化的任何内容。相反，它们定义了实际具体类型符合的接口或蓝图。使用协议，您可以定义一组通用的属性和行为，具体类型可以执行和实现。
 
 协议
 一个协议可以被类、结构或枚举
