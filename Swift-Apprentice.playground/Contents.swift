@@ -243,7 +243,7 @@ default:
  }
  */
 
-// 8. where 语句 [TODO]
+// 8. where 语句
 
 // 七 方法
 // 7.1 标准方法定义(方法名，参数名，返回值类型)
@@ -751,6 +751,8 @@ print(level.unlocked)
 
 // 14.7 懒加载属性（在计算属性前增加lazy，在后面增加()）
 
+// 惰性修饰符会阻止计算存储属性的值，直到您的代码第一次使用它。当属性的初始值是计算密集型的，或者在初始化对象之前您不知道属性的初始值时，您将需要使用延迟初始化。
+
 struct Circle {
   lazy var pi = {
     ((4.0 * atan(1.0 / 5.0)) - atan(1.0 / 239.0)) * 4.0
@@ -767,6 +769,8 @@ struct Circle {
 }
 
 // 14.8 初始化器
+// 14.8.1 当我们创建一个自定义初始化器时，结构的自动成员初始化器就失去作用了，我们必须显式添加自动成员初始化器
+// 14.8.2 还有一种生成无参数初始化器件的方式就是给属性设置默认值。推荐使用这种方式。
 // 14.9 mutating 方法
 // mutating 关键字标记了改变结构值的方法，通过将方法标记为mutating，可以告诉Swift编译器这个方法不能在常量上调用。
 // 14.10 类型方法 用static修饰符
@@ -781,6 +785,23 @@ struct Math {
 Math.factorial(of: 6) // 720
 
 // 14.11 通过扩展为结构体添加方法和初始化器
+// 14.11.1 在扩展中，不能将存储的属性添加到现有结构中，因为这会改变结构的大小和内存布局并破坏现有代码。
+// 14.11.2 通过在扩展中添加自己的初始化程序，可以为结构保留编译器的成员初始化程序
+
+struct PersonX {
+    var name:String
+    var age:Int
+}
+
+extension PersonX {
+    //这个初始化器添加在类本身会导致结构的默认初始化器失效，但是放在扩展这里会保留结构的初始化器
+    init(age:Int) {
+        name  = "tbfungeek"
+        self.age = age
+    }
+}
+
+let person = PersonX(name: "tbfungeek", age: 23)
 
 // 十五. 类
 // 15.1 类是引用类型
@@ -791,16 +812,474 @@ Math.factorial(of: 6) // 720
 // 15.6 类是可变的，结构体是不可变的如果需要改变自身的值需要添加mutating修饰
 // 15.7 使用扩展，扩展类添加方法和计算属性，也可以使用继承将功能添加到类中
 // 15.8 Swift 中的继承是单继承
-// 15.9 多态性与类型转换
+//      (一个 Swift 类只能从一个类继承，这个概念称为单继承,子类化的深度没有限制，这意味着您可以从也是子类的类中子类化)
+// 15.8.1 继承后的子类可以获得父类的方法，覆写override 父亲的方法，通过super访问父类的属性
+// 15.8.2 防止继承
+// 有时您会想要禁止特定类的子类。Swift final为你提供了一个关键字来保证一个类永远不会得到一个子类：
+/*
+final class FinalStudent: Person {}
+class FinalStudentAthlete: FinalStudent {} // Build error!
+ */
+// 15.8.3 防止子类覆写父类的方法
+// 在方法前面添加final
+/*
+ class AnotherStudent: Person {
+   final func recordGrade(_ grade: Grade) {}
+ }
+
+ class AnotherStudentAthlete: AnotherStudent {
+   override func recordGrade(_ grade: Grade) {} // Build error!
+ }
+*/
+
+// 15.10 多态性与类型转换
+
+/*
+if let hallMonitor = hallMonitor as? BandMember {
+  print("This hall monitor is a band member and practices
+         at least \(hallMonitor.minimumPracticeTime)
+         hours per week.")
+}
+*/
 // as: 转换为在编译时已知会成功的特定类型
 // as?: 尝试性转换，转换失败会返回nil
 // as!: 强行转换，转换失败会崩溃
+
+// 15.11 类初始化器
+// 在属性定义的默认值以及初始化器两个地方可以为属性提供初始化服务，在使用类对象之前必须完成整个类的初始化任务
+// 15.11.1 每个初始化器的初始化顺序如下：
+// 优先初始化本类在父类基础上新增的属性，然后调用super.init初始化父类的属性,这是强制的
+
+class Student {
+    var firstName: String = ""
+    var lastName: String = ""
+    init(firstName:String,lastName:String) {
+        self.firstName = firstName
+        self.lastName  = lastName
+    }
+}
+
+class StudentAthlete: Student {
+  var sports: [String]
+
+  init(firstName: String, lastName: String, sports: [String]) {
+    self.sports = sports
+    super.init(firstName: firstName, lastName: lastName)
+  }
+  // original code
+}
+
+// 15.11.2 两阶段初始化
+
+//阶段一：初始化类实例中所有存储的属性，从类层次结构的底部到顶部（当前类->直接子类）。在第一阶段完成之前，不能使用属性和方法。
+//第二阶段：现在可以使用需要使用self.
+
+/*
+class StudentAthlete: Student {
+  var sports: [String]
+
+  init(firstName: String, lastName: String, sports: [String]) {
+ 
+    =========================【第一阶段开始】=========================
+    // 1 必须先完成自身成员的初始化
+    self.sports = sports
+    // 2 在这里可以完成后续所需要的变量生成，或者初始化父类初始化所需对象的初始化
+    let passGrade = Grade(letter: "P", points: 0.0,
+                          credits: 0.0)
+    // 3 再调用父成员的初始化器
+    super.init(firstName: firstName, lastName: lastName)
+    =========================【第一阶段结束】=========================
+ 
+    =========================【第二阶段开始】=========================
+    // 4 可以调用self了
+    recordGrade(passGrade)
+  }
+  // original code
+}
+*/
+
+// 15.11.3 必需初始化器，指定初始化器和便利初始化器
+// 15.11.3.1 必需初始化器 该类的子类都必需实现的初始化器
+// 注意覆写必需的初始化程序不需要override关键字。
+class StudentX {
+  let firstName: String
+  let lastName: String
+
+  required init(firstName: String, lastName: String) {
+    self.firstName = firstName
+    self.lastName = lastName
+  }
+  // original code
+}
+
+class StudentAthleteX: StudentX {
+  // Now required by the compiler!
+  // 这里不需要override
+  required init(firstName: String, lastName: String) {
+    super.init(firstName: firstName, lastName: lastName)
+  }
+  // original code
+}
+
+// 15.11.3.2 指定初始化器和便利初始化器
+// 指定初始化程序必须从其【直接超类】调用指定初始化程序。
+// 便利构造器必须从同一个类中调用另一个构造器。
+// 便利构造器最终必须调用指定构造器
+
+// 15.12 对象的析构
+
+/*
+class Person {
+  // original code
+  deinit {
+    print("\(firstName) \(lastName) is being removed
+          from memory!")
+  }
+}
+ */
+
 
 // 十六. 枚举 【TODO】
 
 // 十七. 协议 【TODO】 高级协议 面向协议编程
 
 // 十八. 泛型  【TODO】 高级泛型
+
+
+/*
+
+
+
+
+枚举 = 方法 + 计算属性 + 原始值（携带常量） + 关联值 （携带变量）
+if case/guard case   遍历所有案例
+
+enum HttpMethod {
+    case get
+    case post(body:String)
+}
+let postMethod = HttpMethod.post(body: "https://www.google.com")
+guard case .post(let body) = postMethod else {
+    return
+}
+print(body)
+
+enum Pet: CaseIterable {
+  case cat, dog, bird, turtle, fish, hamster
+}
+
+for pet in Pet.allCases {
+  print(pet)
+}
+
+
+与其他命名类型不同，协议不定义您直接实例化的任何内容。相反，它们定义了实际具体类型符合的接口或蓝图。使用协议，您可以定义一组通用的属性和行为，具体类型可以执行和实现。
+
+协议
+一个协议可以被类、结构或枚举
+方法和属性。一旦一个类型实现了协议的所有成员，就称该类型符合协议。
+
+方法：
+protocol OptionalDirectionVehicle {
+  // Build error!
+  func turn(_ direction: Direction = .left)
+}
+
+属性：
+protocol VehicleProperties {
+  var/*只能为var*/ weight: Int/*一定要有类型*/ { get } /*get 或者 get set*/
+  /*遵循者可以是let类型*/                      /*遵循者可以是可读写型*/
+  var name: String { get set }
+}
+在协议中定义属性时，您必须将它们明确标记为get或get set
+即使该属性只有一个get要求，您仍然可以将其实现为存储属性或读写计算属性。协议中的要求只是最低要求。
+
+属性 + 方法 + 构造类型（required） + 协议继承 + 一个类实现多个协议 + 关联类型（只是说明了协议中使用了一种类型，而没有指定它应该是什么类型，由协议采用者决定确切的类型应该是什么。）
++ 要求传入的参数满足多个属性 + 通过扩展实现协议 + 声明符合协议的变量
++ 类协议 + Equatable/Comparable
+
+
+protocol Account:BaseType {
+  associatedtype WeightType
+  var weight: WeightType { get }
+  var value: Double { get set }
+  func accelerate()
+  func stop()
+  func turn(_ direction: Direction)
+  func description() -> String
+  init(initialAmount: Double)
+  init?(transferAccount: Account)
+}
+
+如果您使用类类型遵守具有所需初始化程序的协议，则这些初始化程序必须使用required关键字：
+
+class BitcoinAccount: Vehicle, Wheeled /*可以实现多个协议*/ {
+  var value: Double
+  required init(initialAmount: Double) {
+    value = initialAmount
+  }
+  required init?(transferAccount: Account) {
+    guard transferAccount.value > 0.0 else {
+      return nil
+    }
+    value = transferAccount.value
+  }
+}
+
+var accountType: Account.Type = BitcoinAccount.self
+let account = accountType.init(initialAmount: 30.00)
+let transferAccount = accountType.init(transferAccount: account)!
+
+protocol WheeledVehicle: Vehicle {
+  var numberOfWheels: Int { get }
+  var wheelSize: Double { get set }
+}
+
+实现get需求的选择是：
+一个常量存储属性。
+变量存储属性。
+只读计算属性。
+读写计算属性
+
+您对实现 aget和set属性的选择仅限于变量存储属性或读写计算属性。
+
+class HeavyThing: WeightCalculatable {
+  // This heavy thing only needs integer accuracy
+  typealias WeightType = Int //实现者指定类型
+
+  var weight: Int { 100 }
+}
+
+class LightThing: WeightCalculatable {
+  // This light thing needs decimal places
+  typealias WeightType = Double //实现者指定类型
+
+  var weight: Double { 0.0025 }
+}
+
+在这些示例中，您typealias习惯于明确关联类型。这种明确性通常不是必需的，因为编译器通常可以推断出类型。
+在前面的示例中，类型weight明确了关联类型应该是什么，以便您可以删除typealias.
+
+func roundAndRound(transportation: Vehicle & Wheeled) {
+    transportation.stop()
+    print("The brakes are being applied to
+          \(transportation.numberOfWheels) wheels.")
+}
+
+protocol Reflective {
+  var typeName: String { get }
+}
+
+extension String: Reflective {
+  var typeName: String {
+    "I’m a String"
+  }
+}
+
+let title = "Swift Apprentice!"
+title.typeName // I’m a String
+
+var named: Named = ClassyName(name: "Classy")
+
+protocol Named: AnyObject {
+  var name: String { get set }
+}
+
+protocol Equatable {
+  static func ==(lhs: Self, rhs: Self) -> Bool
+}
+
+class Student {
+  let email: String
+  let firstName: String
+  let lastName: String
+
+  init(email: String, firstName: String, lastName: String) {
+    self.email = email
+    self.firstName = firstName
+    self.lastName = lastName
+  }
+}
+
+extension Student: Hashable {
+  static func ==(lhs: Student, rhs: Student) -> Bool {
+    lhs.email == rhs.email &&
+    lhs.firstName == rhs.firstName &&
+    lhs.lastName == rhs.lastName
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(email)
+    hasher.combine(firstName)
+    hasher.combine(lastName)
+  }
+}
+The Hashable protocol, a subprotocol of Equatable
+is required for any type you want to use as a key to a Dictionary.
+Hash values help you quickly find elements in a collection. For this to work, values considered equal by == must also have the same hash value.
+
+
+Identifiable
+
+extension Student: Identifiable {
+  var id: String {
+    email
+  }
+}
+
+CustomStringConvertible
+
+protocol CustomStringConvertible {
+  var description: String { get }
+}
+
+extension Student: CustomStringConvertible {
+  var description: String {
+    "\(firstName) \(lastName)"
+  }
+}
+print(john)
+
+CustomDebugStringConvertible
+
+debugPrint
+
+class Keeper<Animal> {
+
+}
+
+var aCatKeeper = Keeper<Cat>()
+
+
+class Keeper<Animal: Pet> {
+   /* definition body as before */
+}
+
+如果Pet是类 则 要求 Pet要求分配给的类型Animal的是子类Pet，如果是协议，则必须实现协议。
+
+除了这些简单的类型约束之外，您还可以使用泛型 where 子句定义更复杂的类型约束。
+
+extension Array where Element: Cat {
+  func meow() {
+    forEach { print("\($0.name) says meow!") }
+  }
+}
+
+
+func swapped<T, U>(_ x: T, _ y: U) -> (U, T) {
+  (y, x)
+}
+
+swapped(33, "Jay")
+
+
+private：仅可访问同一源文件中该类型的所有嵌套类型和扩展。
+fileprivate：可从定义它的源文件中的任何位置访问。
+internal: 可从定义它的模块内的任何位置访问。此级别是默认访问级别。如果你不写任何东西，这就是你得到的
+public：可从导入模块的任何地方访问。
+与 相同，具有覆盖另一个模块中的代码public的额外能力。
+
+private: Accessible only to the defining type, all nested types and extensions on that type within the same source file.
+fileprivate: Accessible from anywhere within the source file in which it’s defined.
+internal: Accessible from anywhere within the module in which it’s defined. This level is the default access level. If you don’t write anything, this is what you get.
+public: Accessible from anywhere that imports the module.
+open: The same as public, with the additional ability granted to override the code in another module.
+
+class CheckingAccount: BasicAccount {
+  private let accountNumber = UUID().uuidString
+
+  class Check {
+    let account: String
+    var amount: Dollars
+    private(set) var cashed = false
+
+    func cash() {
+      cashed = true
+    }
+
+    init(amount: Dollars, from account: CheckingAccount) {
+      self.amount = amount
+      self.account = account.accountNumber
+    }
+  }
+}
+
+  private let accountNumber = UUID().uuidString //私有外部不可见
+  private(set) var cashed = false //外部只读
+
+
+
+*/
+
+
+//var somePet: Pet = Cat(name: "Whiskers")
+
+/*
+如果协议具有关联类型，则不能将其用作存在类型。例如，如果您Pet像这样更改：
+protocol Pet {
+  associatedtype Food
+  var name: String { get }
+}
+ 
+ protocol Pet {
+   var name: String { get }
+ } 存在类型
+ 
+ protocol WeightCalculatable {
+   associatedtype WeightType
+   var weight: WeightType { get }
+ }
+ 
+ class Truck: WeightCalculatable {
+   // This heavy thing only needs integer accuracy
+   typealias WeightType = Int
+
+   var weight: Int {
+     100
+   }
+ }
+
+ class Flower: WeightCalculatable {
+   // This light thing needs decimal places
+   typealias WeightType = Double
+
+   var weight: Double {
+     0.0025
+   }
+ }
+ 
+ 添加约束protocol WeightCalculatable {
+   associatedtype WeightType: Numeric
+   var weight: WeightType { get }
+ }
+ 
+ struct GenericProductionLine<P: Product>: ProductionLine {
+   func produce() -> P {
+     P()
+   }
+ }
+
+ struct GenericFactory<P: Product>: Factory {
+   var productionLines: [GenericProductionLine<P>] = []
+
+   func produce() -> [P] {
+     var newItems: [P] = []
+     productionLines.forEach { newItems.append($0.produce()) }
+     print("Finished Production")
+     print("-------------------")
+     return newItems
+   }
+ }
+ 
+ var carFactory = GenericFactory<Car>()
+ carFactory.productionLines = [GenericProductionLine<Car>(), GenericProductionLine<Car>()]
+ carFactory.produce()
+ */
+
+
+
+
+
 
 // 十九. 访问控制
 // 19.1 private 只能被同一个类中，以及扩展中和嵌套类中访问到（不被其他类型）。 private(set) 表示只读属性
