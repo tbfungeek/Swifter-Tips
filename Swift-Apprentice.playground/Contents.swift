@@ -2,6 +2,7 @@ import UIKit
 
 // ReadNote of https://www.raywenderlich.com/books/swift-apprentice
 // Materials https://github.com/raywenderlich/sa-materials/tree/editions/7.0
+// Swift GG https://swiftgg.gitbook.io/swift/swift-jiao-cheng/01_the_basics
 
 var greeting = "Hello, playground"
 
@@ -2963,6 +2964,14 @@ class Playlist {
 
 // 25.5.2 nonisolated
 // nonisolated关键字通过禁用参与者的同步功能使该属性同步
+
+// ONE MORE STEP
+// SwiftLint: https://github.com/realm/SwiftLint
+// SwiftFormat: https://github.com/nicklockwood/SwiftFormat
+// Google的Swift代码规范: https://google.github.io/swift/#apples-markup-format
+// API Design Guidelines: https://www.swift.org/documentation/api-design-guidelines/
+// Swift 设计模式: https://refactoringguru.cn/design-patterns/swift
+
 
 
 
