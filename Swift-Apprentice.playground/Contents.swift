@@ -940,6 +940,104 @@ class Person {
 
 
 // 十六. 枚举 【TODO】
+// 16.0 概览 枚举 = 计算属性 + 方法 + 原始值（携带常量） + 关联值 （携带变量）
+// 16.1 定义
+/*
+enum Month: Int /*这里可以指定类型*/ {
+}*/
+
+/*
+enum Month: Int {
+  case january = 1, february = 2, march = 3, april = 4, may = 5,
+  june = 6, july = 7, august = 8, september = 9,
+  october = 10, november = 11, december = 12
+}
+
+ enum Month {
+   case january
+   case february
+   case march
+   case april
+   case may
+   case june
+   case july
+   case august
+   case september
+   case october
+   case november
+   case december
+ }
+ */
+
+// 16.2 原始值
+// 16.2.1 使用原始值初始化
+// let fifthMonth = Month(rawValue: 5)
+// 16.2.2 访问原始值
+/*
+ func monthsUntilWinterBreak(from month: Month) -> Int {
+   Month.december.rawValue - month.rawValue
+ }
+ */
+// 16.2.3 定义时候指定原始值
+enum Coin: Int {
+  case penny = 1
+  case nickel = 5
+  case dime = 10
+  case quarter = 25
+}
+
+// 16.3 关联值
+// 16.3.1 枚举可以具有原始值或关联值，但不能同时具有两者。
+enum WithdrawalResult {
+  case success(newBalance: Int)
+  case error(message: String)
+}
+
+/*
+func withdraw(amount: Int) -> WithdrawalResult {
+  if amount <= balance {
+    balance -= amount
+    return .success(newBalance: balance)
+  } else {
+    return .error(message: "Not enough money!")
+  }
+}*/
+
+// 16.3.2 使用if（switch） case / guard case 来提取关联值中的值
+
+/*
+let result = withdraw(amount: 99)
+switch result {
+case .success(let newBalance):
+  print("Your new balance is: \(newBalance)")
+case .error(let message):
+  print(message)
+}
+ 
+ let request = HTTPMethod.post(body: "Hi there")
+ guard case .post(let body) = request else {
+   fatalError("No message was posted")
+ }
+ print(body)
+
+ */
+
+// 16.4 枚举的遍历
+
+enum Pet: CaseIterable {
+  case cat, dog, bird, turtle, fish, hamster
+}
+
+for pet in Pet.allCases {
+  print(pet)
+}
+
+
+
+
+
+
+
 
 // 十七. 协议 【TODO】 高级协议 面向协议编程
 
@@ -949,9 +1047,6 @@ class Person {
 /*
 
 
-
-
-枚举 = 方法 + 计算属性 + 原始值（携带常量） + 关联值 （携带变量）
 if case/guard case   遍历所有案例
 
 enum HttpMethod {
