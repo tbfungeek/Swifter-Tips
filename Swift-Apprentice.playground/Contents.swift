@@ -1447,166 +1447,142 @@ struct RugbyRecord: TeamRecord, Tieable {
 let rugbyRecord = RugbyRecord(wins: 8, losses: 7, ties: 1)
 rugbyRecord.winningPercentage // 0.5
 
+// 十八. 泛型
+// 18.1 定义：
+// class Keeper<Animal> {}
+// var aCatKeeper = Keeper<Cat>()
+// 要定义一个泛型类型Keeper<Animal>，你只需要选择泛型类型的名称和类型参数。类型参数的名称，也称为占位符，应该阐明类型参数和泛型类型之间的关系。
 
+class Cat {
+  var name: String
 
+  init(name: String) {
+    self.name = name
+  }
+}
 
+class Dog {
+  var name: String
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 十八. 泛型  【TODO】 高级泛型
-
-
-/*
+  init(name: String) {
+    self.name = name
+  }
+}
 
 class Keeper<Animal> {
+  var name: String
+  var morningCare: Animal
+  var afternoonCare: Animal
 
-}
-
-var aCatKeeper = Keeper<Cat>()
-
-
-class Keeper<Animal: Pet> {
-   /* definition body as before */
-}
-
-如果Pet是类 则 要求 Pet要求分配给的类型Animal的是子类Pet，如果是协议，则必须实现协议。
-
-除了这些简单的类型约束之外，您还可以使用泛型 where 子句定义更复杂的类型约束。
-
-extension Array where Element: Cat {
-  func meow() {
-    forEach { print("\($0.name) says meow!") }
+  init(name: String, morningCare: Animal, afternoonCare: Animal) {
+    self.name = name
+    self.morningCare = morningCare
+    self.afternoonCare = afternoonCare
   }
 }
 
+//可以在存储属性、计算属性、方法签名和嵌套类型的定义中的任何位置使用类型参数。
+let jason = Keeper(name: "Jason",
+            morningCare: Cat(name: "Whiskers"),
+          afternoonCare: Cat(name: "Sleepy"))
 
-func swapped<T, U>(_ x: T, _ y: U) -> (U, T) {
-  (y, x)
+// 18.3 类型擦除
+// 18.3.1 类型擦除概述
+// 类型擦除是一种用于擦除不重要的类型信息的技术。将不同某些行为类似，但是有自己特性的不同类，进行类型擦除，这样就可以放在一起对待统一处理了。
+// 类型Any是最终类型擦除。它会删除所有类型信息。
+// 不仅在 Swift 标准库中，在其他库中也有几种类型擦除类型。例如，AnyIterator, AnySequence, AnyCollection,AnyHashable是 Swift 标准库的一部分。
+// AnyPublisher是 Combine 框架AnyView的一部分，也是 SwiftUI 的一部分。
+
+// 18.3.2 类型擦除
+
+protocol PetX {
+  associatedtype Food
+  func eat(_ food: Food)
 }
 
-swapped(33, "Jay")
+enum PetFood { case dry, wet }
 
-
-private：仅可访问同一源文件中该类型的所有嵌套类型和扩展。
-fileprivate：可从定义它的源文件中的任何位置访问。
-internal: 可从定义它的模块内的任何位置访问。此级别是默认访问级别。如果你不写任何东西，这就是你得到的
-public：可从导入模块的任何地方访问。
-与 相同，具有覆盖另一个模块中的代码public的额外能力。
-
-private: Accessible only to the defining type, all nested types and extensions on that type within the same source file.
-fileprivate: Accessible from anywhere within the source file in which it’s defined.
-internal: Accessible from anywhere within the module in which it’s defined. This level is the default access level. If you don’t write anything, this is what you get.
-public: Accessible from anywhere that imports the module.
-open: The same as public, with the additional ability granted to override the code in another module.
-
-class CheckingAccount: BasicAccount {
-  private let accountNumber = UUID().uuidString
-
-  class Check {
-    let account: String
-    var amount: Dollars
-    private(set) var cashed = false
-
-    func cash() {
-      cashed = true
-    }
-
-    init(amount: Dollars, from account: CheckingAccount) {
-      self.amount = amount
-      self.account = account.accountNumber
-    }
+struct CatX: PetX {
+  func eat(_ food: PetFood) {
+    print("Eating cat food.")
   }
 }
 
-  private let accountNumber = UUID().uuidString //私有外部不可见
-  private(set) var cashed = false //外部只读
+struct DogX: PetX {
+  func eat(_ food: PetFood) {
+    print("Eating dog food.")
+  }
+}
 
+// let pets: [PetX] = [DogX(), CatX()]
+// 这种方式不行会报 use of protocol 'PetX' as a type must be written 'any PetX'的错误
 
+struct AnyPet<Food>: PetX {                  // 1
+  private let _eat: (Food) -> Void          // 2
 
-*/
+  // 3
+  init<SomePet: PetX>(_ pet: SomePet) where SomePet.Food == Food {
+    _eat = pet.eat(_:)
+  }
 
+  // 4
+  func eat(_ food: Food) {
+    _eat(food)
+  }
+}
 
-//var somePet: Pet = Cat(name: "Whiskers")
+// let pets = [AnyPet(Dog()), AnyPet(Cat())]
+// 这种写法就可以了
+// 更近一步可以提供eraseToAnyPet实现
+
+extension PetX {
+  func eraseToAnyPet() -> AnyPet<Food> {
+    .init(self)
+  }
+}
+
+let morePets = [DogX().eraseToAnyPet(),
+                CatX().eraseToAnyPet()]
+
+// 18.3 不透明的返回类型
+// 类型擦除的目标是隐藏有关具体类型的不重要细节，但仍使用协议传达类型的功能。
+// Swift提供了一个相关的语言特性，称为opaque return types。
+// 它的优点是您不需要创建Any***包装器类型。不透明的返回类型通过使编译器跟踪具体的返回类型而起作用，但只让函数调用者使用支持的协议接口。
+// 编译器的这种簿记使您能够使用具有关联类型的协议，否则这些协议只能用作通用约束。
+
+func makeValue() -> some FixedWidthInteger {
+  42
+}
+// 这里的魔力是some FixedWidthInteger。（Swift 中所有不同的整数类型都采用该FixedWidthInteger协议。）对于这个返回类型，你唯一知道的是它是一种整数。
 
 /*
-如果协议具有关联类型，则不能将其用作存在类型。例如，如果您Pet像这样更改：
-protocol Pet {
-  associatedtype Food
-  var name: String { get }
+func makeValueRandomly() -> some FixedWidthInteger {
+  if Bool.random() {
+    return Int(42)
+  }
+  else {
+    return Int8(24) // 这里会报错误，所有路径返回的类型必须是同一种类型
+  }
 }
- 
- protocol Pet {
-   var name: String { get }
- } 存在类型
- 
- protocol WeightCalculatable {
-   associatedtype WeightType
-   var weight: WeightType { get }
- }
- 
- class Truck: WeightCalculatable {
-   // This heavy thing only needs integer accuracy
-   typealias WeightType = Int
+*/
+// FixedWidthInteger有关联的类型；不能将其用作存在类型
+// let v: FixedWidthInteger = 42 // compiler error
+// let v = makeValue() // works
 
-   var weight: Int {
-     100
-   }
- }
+// 还可以将值作为实现协议组合的对象返回
+func makeEquatableNumericInt() -> some Numeric & Equatable { 1 }
+func makeEquatableNumericDouble() -> some Numeric & Equatable { 1.0 }
 
- class Flower: WeightCalculatable {
-   // This light thing needs decimal places
-   typealias WeightType = Double
+let value1 = makeEquatableNumericInt()
+let value2 = makeEquatableNumericInt()
 
-   var weight: Double {
-     0.0025
-   }
- }
- 
- 添加约束protocol WeightCalculatable {
-   associatedtype WeightType: Numeric
-   var weight: WeightType { get }
- }
- 
- struct GenericProductionLine<P: Product>: ProductionLine {
-   func produce() -> P {
-     P()
-   }
- }
+print(value1 == value2) // prints true
+print(value1 + value2) // prints 2
+// print(value1 > value2) // error 虽然 返回的1和1.0 都符合Comparable 但是some Numeric & Equatable不包含Comparable所以这里会报错误
 
- struct GenericFactory<P: Product>: Factory {
-   var productionLines: [GenericProductionLine<P>] = []
-
-   func produce() -> [P] {
-     var newItems: [P] = []
-     productionLines.forEach { newItems.append($0.produce()) }
-     print("Finished Production")
-     print("-------------------")
-     return newItems
-   }
- }
- 
- var carFactory = GenericFactory<Car>()
- carFactory.productionLines = [GenericProductionLine<Car>(), GenericProductionLine<Car>()]
- carFactory.produce()
- */
-
-
-
-
-
+// 即使从外部看起来类型相同， some Numeric & Equatable编译器也知道具体类型Int，并且与Double此示例不同
+// Compiler error, types don't match up
+// makeEquatableNumericInt() == makeEquatableNumericDouble()
 
 // 十九. 访问控制
 // 19.1 private 只能被同一个类中，以及扩展中和嵌套类中访问到（不被其他类型）。 private(set) 表示只读属性
