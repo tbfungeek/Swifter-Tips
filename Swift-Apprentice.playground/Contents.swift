@@ -142,7 +142,7 @@ print(dy)
 
 // 五.3 集合类型
 
-// 五.4 值类型和引用类型 【TODO】
+// 五.4 值类型和引用类型
 // Swift 支持两种类型：值类型和引用类型。结构和枚举是值类型，而类和函数是引用类型，它们的行为不同。
 // 区别：对象的存储地址不同
 //      值类型：栈 引用类型：堆
@@ -773,6 +773,133 @@ struct Circle {
     self.radius = radius
   }
 }
+
+// 14.8 属性包装器
+// 14.8.1 属性包装器基本使用
+@propertyWrapper                                           // 1
+struct ZeroToOne {                                         // 2
+  private var value: Double
+
+  private static func clamped(_ input: Double) -> Double { // 3
+    min(max(input, 0), 1)
+  }
+
+  init(wrappedValue: Double) {
+    value = Self.clamped(wrappedValue)                     // 4
+  }
+
+  var wrappedValue: Double {                               // 5
+    get { value }
+    set { value =  Self.clamped(newValue) }
+  }
+}
+
+// 1. 该属性@propertyWrapper表示这种类型可以用作属性包装器。因此，它必须提供一个名为wrappedValue.
+// 2. 在其他所有方面，它只是一种标准类型。在这种情况下，它是一个带有私有变量的结构value。
+// 3. 私有静态clamped(_:)辅助方法执行最小/最大舞蹈以将值保持在零和一之间。
+// 4. 属性包装器类型需要包装的值初始值设定项。
+// 5. The wrappedValue vends the clamped value.
+
+// 有了上述的定义后就可以使用下面的定义来使用了
+struct Color {
+  @ZeroToOne var red: Double
+  @ZeroToOne var green: Double
+  @ZeroToOne var blue: Double
+}
+
+var superRed = Color(red: 2, green: 0, blue: 0)
+print(superRed)
+// r: 1, g: 0, b: 0
+
+superRed.blue = -2
+print(superRed)
+// r: 1, g: 0, b: 0
+
+// 从 Swift 5.5 开始，您也可以使用带有函数参数的属性包装器。
+func printValue(@ZeroToOne _ value: Double) {
+  print("The wrapped value is", value)
+}
+printValue(3.14)
+
+// 14.8.2 Projecting values with $
+
+@propertyWrapper
+struct ZeroToOneV2 {
+  private var value: Double
+
+  init(wrappedValue: Double) {
+    value = wrappedValue
+  }
+
+  var wrappedValue: Double {
+    get { min(max(value, 0), 1) }
+    set { value = newValue }
+  }
+
+  var projectedValue: Double { value }
+}
+
+//属性包装器还提供另一种类型，称为projectedValue. 您可以使用它来提供对未固定值的直接访问
+
+func printValueV2(@ZeroToOneV2 _ value: Double) {
+  print("The wrapped value is", value)
+  print("The projected value is", $value)
+}
+printValueV2(3.14)
+//这会打印出1.0包装值和3.14预计值。
+
+// 14.8.3 添加参数
+
+// 下面增加了上限up参数
+
+/*
+@propertyWrapper
+struct ZeroTo {
+  private var value: Double
+  let upper: Double
+
+  init(wrappedValue: Double, upper: Double) {
+    value = wrappedValue
+    self.upper = upper
+  }
+
+  var wrappedValue: Double {
+    get { min(max(value, 0), upper) }
+    set { value = newValue }
+  }
+
+  var projectedValue: Double { value }
+}
+ 
+ func printValueV3(@ZeroTo(upper: 10) _ value: Double) {
+   print("The wrapped value is", value)
+   print("The projected value is", $value)
+ }
+ printValueV3(42)
+
+ */
+
+// 14.8.4 通用
+
+/*
+ @propertyWrapper
+ struct ZeroTo<Value: Numeric & Comparable> {
+   private var value: Value
+   let upper: Value
+
+   init(wrappedValue: Value, upper: Value) {
+     value = wrappedValue
+     self.upper = upper
+   }
+
+   var wrappedValue: Value {
+     get { min(max(value, 0), upper) }
+     set { value = newValue }
+   }
+
+   var projectedValue: Value { value }
+ }
+ */
 
 // 14.8 初始化器
 // 14.8.1 当我们创建一个自定义初始化器时，结构的自动成员初始化器就失去作用了，我们必须显式添加自动成员初始化器
