@@ -4,6 +4,98 @@ import UIKit
 // Materials https://github.com/raywenderlich/sa-materials/tree/editions/7.0
 // Swift GG https://swiftgg.gitbook.io/swift/swift-jiao-cheng/01_the_basics
 
+
+// 总结
+// 一. 注释
+// 单行注释。多行注释，嵌套注释，Doc注释
+
+// 二. 打印
+// print VS debugPrint
+
+// 三. 运算符号
+// 1. 算术，关系，逻辑，赋值，位运算，三目赋值
+// 2. 比较特殊的运算符号: === !== ?? ... ..<
+
+// 四. 常量与变量
+// 1. 类型推断
+// 2. 强制类型转换
+// 3. 常量的定义与二进制，十进制，八进制，十六进制表示
+// 4. 变量
+
+// 五. 常用类型
+// 0. 类型别名typealias
+// 1. 值类型和引用类型：从存储位置，赋值行为对二者进行对比，什么是COW
+// 2. 字符串常见操作： +  \()  """  """" #/## startIndex,endIndex,index/firstIndex/ .../..<
+// 3. 元组: 定义，匿名元组，命名元组，解包，解包忽略某些成员
+// 4. 数组：定义，访问，遍历（需要index,不需要index），增，删，改，查，排序，交换
+// 5. 字典: 定义，访问，遍历 (需要key，不需要key)，增，删，改，查
+// 6. 集合: 定义，访问，遍历，增，删除，查
+
+// 六. 控制语句
+// 1. while() {}/ repeat{} while()
+// 2. for index in range / for _ in range /for (key,value) in map
+// 3. switch 合并匹配，访问匹配，取值条件匹配，部分匹配
+// 4. break,continue,return,fallthrough
+// 5. guard
+// 6. where
+
+// 七. 方法
+// 1. func 方法名称(外部标签 内部标签:inout 类型=默认值...(可变参数)) -> (类型，元组)
+// 2. 方法重载：参数类型，参数外部标签，参数数量，返回值类型
+// 3. 将方法和闭包作为参数或者返回值
+// 4. 类方法static
+// 5. 结构体mutating方法
+
+// 八. 可选类型
+// 1. 一个定时炸弹盲盒,定义
+// 2. 强制打开，if let/guard let/
+// 3. 提供备用值 ??
+
+// 九. 闭包
+// 9.1 匿名，捕获上下文常量变量
+// 9.2 闭包定义
+// 9.3 闭包简化方案 return/参数类型/参数/in/$0
+// 9.4 尾随闭包
+// 9.5 逃逸闭包
+// 9.6 自动闭包: 适合类型：无参数，返回值可有可无，传入表达式，延迟求值
+
+// 十. 函数式编程
+// 10.1 forEach/filter/map/compactMap/flatMap/reduce
+
+// 十一. 属性
+// 11.1 存储属性，计算属性
+// 11.2 存储属性可以是let 常量，var变量，默认值，如果没有默认值则在初始化函数中对其进行赋值，它可以有didSet(oldValue)和willSet(newValue)属性监听器
+// 11.3 计算属性只能是变量，可以有set和get
+// 11.4 懒加载属性 layzy var value = {}()
+// 11.5 类属性 static
+// 11.6 propertyWrapper属性包装器（用于限定属性）
+//      (0) @propertyWrapper修饰结构体（1）私有属性（2）init(wrappedValue) (3)计算属性wrappedValue （4）projectedValue (5)$获取projectedValue
+//      (6) 参数，通用
+
+// 十二. 初始化器
+// 如果在结构体中添加任意一个初始化方法，默认成员初始化器就会失效，但是在扩展里面添加人意初始化方法不会导致默认成员初始化器失效，所以推崇这种方式
+// 必须在初始化完成之前完成非可选类型存储属性的初始化操作
+// 初始化分成两个阶段
+// 必需初始化器（该类的所有子类都必需实现，子类覆写不需要override），
+// 指定初始化器（调用直接父类的初始化器），便利初始化器（调用自己的其他初始化器，可以是指定，也可以是便利，但是最终都需要调用到指定初始化器）
+
+
+// 十三. 类，结构体，枚举
+// 13.0 类与结构体枚举的区别
+// 13.1 类
+// 13.1.1 没有默认成员初始化器
+// 13.1.2 修改自身值的时候不用mutating
+// 13.1.3 单继承 super override
+// 13.1.4 final 类不允许继承/方法不允许覆写
+// 13.1.5 多态 as/as?/as! if let as
+// 13.1.6 对象的析构
+// 13.2 枚举
+// 13.2.1 枚举定义，指定类型
+// 13.2.2 原始值，指定，访问，使用原始值来初始化枚举
+// 13.2.3 关联值定义，赋值，取值
+// 13.2.4 枚举遍历
+
+
 var greeting = "Hello, playground"
 
 
@@ -23,17 +115,22 @@ var greeting = "Hello, playground"
   */
  */
 
+// [TODO 衍生内容] 如何规范化Doc
+
 
 // 二. 打印
 
+//直接按照要求打印内容
 print("Hello Swift Apprentice reader!")
+//会输出对调试有用的附加信息
+debugPrint("Hello Swift Apprentice Reader!")
 
 // 三. 运算符
 // 算术运算符: + - * / %
 // 关系运算符: == != > < >= <=  === !==
 // 位运算: & | ~ ^ >> <<
 // 逻辑运算符: ! &&  ||
-// 赋值运算符: ==
+// 赋值运算符: =
 // 三目运算符: ?:
 // 空合运算符: a??b
 //           a必须是option类型
@@ -47,13 +144,15 @@ print("Hello Swift Apprentice reader!")
 // 常量:
 let number: Int = 10
 // 一旦你声明了一个常量，你就不能改变它的数据 number = 0
+
 // 数值进制:
 // 十进制，没有前缀
 // 二进制，前缀为0b
 // 八进制，前缀为0o
 // 十六进制，前缀为0x
+// 记忆方式 [box]
 
-// 随机值
+// 随机值:
 Int.random(in: 0...5)
 
 // 变量:
@@ -348,8 +447,8 @@ let valueString: String = getValue()
 // 7.12 [规范化] 代码注释 Option + Cmd + /
 
 
-
-// 八. 可选类型：将可选项想象成一个盒子：它要么只包含一个值，要么为空。当它不包含值时，它被称为包含nil. 盒子本身总是存在的；它总是在那里让你打开并看看里面
+// 八. 可选类型：
+// 将可选项想象成一个盒子：它要么只包含一个值，要么为空。当它不包含值时，它被称为包含nil. 盒子本身总是存在的；它总是在那里让你打开并看看里面
 var authorName: String? = "Matt Galloway"
 var authorAge: Int? = 30
 
@@ -529,8 +628,8 @@ multiplyClosure = {
 //当你定义接受闭包作为参数的函数时，你可以在参数名之前标注 @escaping ，用来指明这个闭包是允许“逃逸”出 这个函数的。
 
 //一种能使闭包“逃逸”出函数的方法是，将这个闭包保存在一个函数外部定义的变量中。
-//举个例子，很多启动异 步操作的函数接受一个闭包参数作为 completion handler。
-//这类函数会在异步操作开始之后立刻返回，但是闭包 直到异步操作结束后才会被调用。在这种情况下，闭包需要“逃逸”出函数，因为闭包需要在函数返回之后被调
+//举个例子，很多启动异步操作的函数接受一个闭包参数作为 completion handler。
+//这类函数会在异步操作开始之后立刻返回，但是闭包直到异步操作结束后才会被调用。在这种情况下，闭包需要“逃逸”出函数，因为闭包需要在函数返回之后被调
 
 
 // 12.6 自动闭包
@@ -544,6 +643,7 @@ func serve(customer customerProvider: /*这里增加了 @autoclosure*/() -> Stri
 }
 serve(customer: { customersInLine.remove(at: 0) } )
 
+// 改造后
 func serves(customer customerProvider: @autoclosure () -> String) {
     print("Now serving \(customerProvider())!")
 }
@@ -632,7 +732,6 @@ let firstChar = cafeCombining[firstIndex]
 let lastIndex = cafeCombining.index(before: cafeCombining.endIndex)
 let lastChar = cafeCombining[lastIndex]
 
-
 let fourthIndex = cafeCombining.index(cafeCombining.startIndex,
                                       offsetBy: 3)
 let fourthChar = cafeCombining[fourthIndex]
@@ -669,7 +768,14 @@ print(raw2)
 // [计算属性] 计算属性必须为变量,计算属性还必须包含一个类型，计算属性还可以有get{} set{} 方法 （一般我们只是给计算属性添加 get set重写）
 struct TV {
     var width : Double
-    var height: Double
+    var height: Double {
+        willSet {
+            
+        }
+        didSet {
+            
+        }
+    }
     
     var diagnoal: Int
     {
@@ -733,6 +839,7 @@ var c:Int {
 // 14.6 类型属性
 struct Level {
     static var highestLevel = 1
+    static let constant = 12
     var id: Int
     var boss: String {
         set {
@@ -782,20 +889,20 @@ struct Circle {
 // 14.8.1 属性包装器基本使用
 @propertyWrapper                                           // 1
 struct ZeroToOne {                                         // 2
-  private var value: Double
+    private var value: Double
+    
+    init(wrappedValue: Double) {
+      value = Self.clamped(wrappedValue)                     // 4
+    }
+    
+    var wrappedValue: Double {                               // 5
+      get { value }
+      set { value =  Self.clamped(newValue) }
+    }
 
-  private static func clamped(_ input: Double) -> Double { // 3
-    min(max(input, 0), 1)
-  }
-
-  init(wrappedValue: Double) {
-    value = Self.clamped(wrappedValue)                     // 4
-  }
-
-  var wrappedValue: Double {                               // 5
-    get { value }
-    set { value =  Self.clamped(newValue) }
-  }
+    private static func clamped(_ input: Double) -> Double { // 3
+        min(max(input, 0), 1)
+    }
 }
 
 // 1. 该属性@propertyWrapper表示这种类型可以用作属性包装器。因此，它必须提供一个名为wrappedValue.
@@ -1076,7 +1183,7 @@ class Person {
  */
 
 
-// 十六. 枚举 【TODO】
+// 十六. 枚举
 // 16.0 概览 枚举 = 计算属性 + 方法 + 原始值（携带常量） + 关联值 （携带变量）
 // 16.1 定义
 /*
