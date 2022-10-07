@@ -5,7 +5,7 @@ import UIKit
 // Swift GG https://swiftgg.gitbook.io/swift/swift-jiao-cheng/01_the_basics
 
 
-// 总结
+// Swift 总结
 // 一. 注释
 // 单行注释。多行注释，嵌套注释，Doc注释
 
@@ -38,6 +38,11 @@ import UIKit
 // 4. break,continue,return,fallthrough
 // 5. guard
 // 6. where
+// 7. 模式匹配
+// a. if case/guard case/switch case + 元组/枚举 判断是否是某个案例
+// b. switch case/let where (如果变量直接来自switch变量则直接case _ where xxxx)
+// c. 模式表达式
+// d. 模式匹配通配符_ 准确值 值绑定
 
 // 七. 方法
 // 1. func 方法名称(外部标签 内部标签:inout 类型=默认值...(可变参数)) -> (类型，元组)
@@ -87,6 +92,7 @@ import UIKit
 // 13.1.3 单继承 super override
 // 13.1.4 final 类不允许继承/方法不允许覆写
 // 13.1.5 多态 as/as?/as! if let as
+//        if people is Man {} / if let m = people as? Man {}
 // 13.1.6 对象的析构
 // 13.2 枚举
 // 13.2.1 枚举定义，指定类型
@@ -94,8 +100,40 @@ import UIKit
 // 13.2.3 关联值定义，赋值，取值
 // 13.2.4 枚举遍历
 // 13.3 自定义操作符
-// 13.4 下标操作
+/*
+    precedencegroup BLCustomerPrecedence {
+      /// 优先从左向右， left, right or none
+      associativity: left
+      //    higherThan: MultiplicationPrecedence//优先级，比乘法运算高
+      //    lowerThan: AdditionPrecedence       // 优先级, 比加法运算低
+      assignment: false                   // 是否是赋值运算
+    }
 
+    infix operator ~~: BLCustomerPrecedence
+
+    extension String {
+
+      static func ~~ (left: String, right: String) -> String {
+             return left + right
+        }
+    }
+*/
+// 13.4 下标操作
+// 13.4.1. 原型和函数类似，包含一个参数列表和一个返回值
+// 13.4.2. 参数列表可以是可变参数，可以抛出错误，可以是异步/但是不能是inout和默认参数
+// 13.4.3. 下标的主体看起来像一个计算属性，由一个get和一个set构成，set是可选的。
+// 13.4.4. 类下标操作
+// 13.4.5. 动态成员查找 @dynamicMemberLookup/dynamicMember
+// 13.4.6. 使用键路径 设置类的属性/访问类的属性/作为参数 使用方法\.类型.xxx tutorial[keyPath:
+/*
+class Personal {
+    var name = "nameX"
+}
+
+let personal = Personal()
+let name = personal[keyPath: \.name]
+personal[keyPath: \.name] = "afterChange"
+*/
 // 十四. 协议
 // 14.1 协议的能（约束行为）与不能（实例化对象）
 // 14.2 协议包含的元素：属性{必须有get，set修饰，遵循方var还是let 是由get/set决定的，最小标准原则，可以是计算属性或者存储属性}，
@@ -116,12 +154,54 @@ import UIKit
 //      在协议扩展上使用类型约束，您可以使用该类型的方法和属性,通过类型约束可以同时使用两个类型的属性和方法，以及在特定类型上创建默认实现
 
 // 十五. 泛型
+// 修饰类，修饰方法参数
+// 泛型中的类型约束
+// 类型擦除隐藏有关具体类型的不重要细节，但仍使用协议传达类型的功能。
+// 不透明类型：又称为反向泛型，被调用方知道具体的类型细节，调用方不知道调用细节，只知道返回协议所暴露的，
+//           泛型是被调用方只实现通用的细节，但是具体的类型细节它不知道，而调用方知道它所需要的类型细节信息。
+// 如果具有不透明返回类型的函数从多个位置返回，则所有可能的返回值必须具有相同的类型。
+// 还可以将值作为实现协议组合的对象返回
+// 所有的操作都必须是基于所暴露的协议来完成的
 
 // 十六. 扩展
+// 16.1 扩展不但可以针对类,结构体，枚举，还可以这对协议创建扩展（添加协议的默认实现）
+// 16.2 使用扩展，扩展类添加方法和计算属性和初始化器，但是不能添加存储属性，因为这会改变结构的大小和内存布局并破坏现有代码。
+//      通过在扩展中添加自己的初始化程序，可以为结构保留编译器的成员初始化程序
+// 16.3 使用扩展遵循的优点是，可以将协议采用与必要的方法和属性很好地分组，而不是让一堆协议使您的类型定义变得混乱。
+// 16.4 Swift 允许为某些采用类型编写扩展。在协议扩展上使用类型约束，您可以使用该类型的方法和属性。
+// 16.5 将代码组织成扩展，将访问修饰符应用于扩展本身，这将帮助您将整个代码段分类为public、internal或private.当您将访问修饰符应用于扩展时，扩展的所有成员都会获得该访问级别。
 
-// 十七. 错误，可选链
+// 十七. 访问控制
+// 17.1 private 只能被同一个类中，以及扩展中和嵌套类中访问到（不被其他类型）。 private(set) 表示只读属性
+// 17.2 文件私有权限fileprivate：它允许访问与实体在同一文件中编写的任何代码（不被其他文件访问）
+// 17.3 internal 表示可以从定义实体的软件模块中的任何位置访问实体
+// 17.4 public 表示它的模块外部的代码可以看到和使用的实体。（只能访问）
+// 17.5 open在public的基础上允许覆写改模块的代码（覆写，访问）
+// 17.6 将代码组织成扩展，将访问修饰符应用于扩展本身，这将帮助您将整个代码段分类为public、internal或private.
+//      当您将访问修饰符应用于扩展时，扩展的所有成员都会获得该访问级别。
 
-// 十八. 并发
+// 十八. 代码安全
+// 18.1 可选初始化器，可选链，可选类型处理if let,guard let,compactMap
+// 18.2 错误处理
+// 18.2.1 使用枚举定义错误类型
+// 18.2.2 有错误的地方使用throw抛出异常，会抛出异常的方法使用throws关键字声明
+// 18.2.3 使用do { try } catch （let）来捕获异常
+// 18.2.4 rethrows 自己不会抛出异常，但是会转抛异常
+// 18.3   try ? 不处理异常
+// 18.4   有异常直接退出应用 fatalError()
+// 18.5   可抛出异常属性 get throws
+
+// 十九. 内存管理
+// 19.1 弱引用（weak var value:Int ?）可有可无，生命周期比当前对象短。无主引用(unowned var value:Int) 必需拥有，生命周期比当前对象长
+// 19.2 捕获列表
+// 19.3 [weak self] [unowned self] weak strong dance
+
+// 二十. 并发
+// 20.1 任务定义，取消任务，暂停任务
+// 20.1 异步方法 async throws(恶心扔掉) try await
+// 20.2 并行异步方法 async let / try await/ async throws
+// 20.3 异步属性 get async throws  异步下标 异步序列
+// 20.4 使用Actor来解决数据竞争问题
 
 var greeting = "Hello, playground"
 
@@ -429,7 +509,7 @@ dynamicParamFunc(1,2,3,4,5)
 
 
 // 7.7  [返回值部分]: 基本返回值
-func returnValueDemo(param1:Int,param2:Int) -> Int {
+func returnValueDe(param1:Int,param2:Int) -> Int {
     return param1 + param2
 }
 
@@ -1818,14 +1898,23 @@ let morePets = [DogX().eraseToAnyPet(),
                 CatX().eraseToAnyPet()]
 
 // 18.3 不透明的返回类型
-// 类型擦除的目标是隐藏有关具体类型的不重要细节，但仍使用协议传达类型的功能。
-// Swift提供了一个相关的语言特性，称为opaque return types。
+// 不透明类型是指编译器能获取到类型信息，但是模块使用者却不能获取到，被调用方知能获得返回对象的具备的功能，但是不知道具体的类型
+// 具有不透明返回类型的函数或方法会隐藏返回值的类型信息。函数不再提供具体的类型作为返回类型，而是根据它支持的协议来描述返回值。
+// 隐藏类型信息在模块和调用该模块的代码的连接处很有用，因为返回值的底层类型可以保持私有。与返回类型为协议类型的值不同，不透明类型保留类型标识——编译器可以访问类型信息，但调用该模块的代码却不能。
 // 它的优点是您不需要创建Any***包装器类型。不透明的返回类型通过使编译器跟踪具体的返回类型而起作用，但只让函数调用者使用支持的协议接口。
-// 编译器的这种簿记使您能够使用具有关联类型的协议，否则这些协议只能用作通用约束。
+// 协议类型会导致类型擦除，而不透明类型则不会。
+// 不透明类型和泛型的区别
+// 不透明类型是被调用者知道类型的具体信息，而被调用方只能根据返回协议的信息来了解返回对象，而泛型调用方知道返回对象的具体信息，而被调用者只知道抽象的描述。
+
+/* [原表述内容]
+ 可以将不透明类型视为与泛型类型相反的类型。泛型类型，以一种从函数实现中抽象出来的方式，
+ 让调用函数的代码选择该函数参数和返回值的类型。而不透明类型允许函数实现以一种从函数内部的代码中抽象出来的方式为它返回的值选择类型。
+ */
 
 func makeValue() -> some FixedWidthInteger {
   42
 }
+
 // 这里的魔力是some FixedWidthInteger。（Swift 中所有不同的整数类型都采用该FixedWidthInteger协议。）对于这个返回类型，你唯一知道的是它是一种整数。
 
 /*
@@ -1837,6 +1926,8 @@ func makeValueRandomly() -> some FixedWidthInteger {
     return Int8(24) // 这里会报错误，所有路径返回的类型必须是同一种类型
   }
 }
+// 如果具有不透明返回类型的函数从多个位置返回，则所有可能的返回值必须具有相同的类型。
+ 
 */
 // FixedWidthInteger有关联的类型；不能将其用作存在类型
 // let v: FixedWidthInteger = 42 // compiler error
@@ -2283,31 +2374,7 @@ for case let name? in namess {
   print(name) // 4 times
 }
 
-// 22.6 场景 6 is 模式
-
-let response: [Any] = [15, "George", 2.0]
-
-for element in response {
- switch element {
- case is String:
-   print("Found a string") // 1 time
- default:
-   print("Found something else") // 2 times
- }
-}
-
-// 22.7 场景 7 as 模式
-
-for element in response {
- switch element {
- case let text as String:
-   print("Found a string: \(text)") // 1 time
- default:
-   print("Found something else") // 2 times
- }
-}
-
-// 22.8 场景 8 where 模式
+// 22.6 场景 6 where 模式
 for number in 1...9 {
   switch number {
   case let x where x % 2 == 0:
@@ -2357,7 +2424,7 @@ default:
   print("This view can’t be described by this example")
 }
 
-// 22.9 场景 9 用逗号链接
+// 22.7 场景 7 用逗号链接
 func timeOfDayDescription(hour: Int) -> String {
   switch hour {
   case 0, 1, 2, 3, 4, 5:
@@ -2456,6 +2523,25 @@ func ~=(pattern: [Int], value: Int) -> Bool {
   return false
 }
 
+struct StudentS {
+    var name:String = "test"
+    var age:Int = 29
+    
+    static func ~=(pattern:StudentS,value:String) -> Bool {
+        if (pattern.name == value) {
+            return true
+        }
+        return false
+    }
+}
+
+let isStudentWeWonted = StudentS() ~= "test"
+
+if case StudentS() = "test" {
+  print("equal")
+} else {
+    print("not equal")
+}
 
 // 二十三. 错误处理 【TODO】
 
