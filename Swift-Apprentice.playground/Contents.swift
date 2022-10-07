@@ -97,19 +97,33 @@ import UIKit
 // 13.4 下标操作
 
 // 十四. 协议
+// 14.1 协议的能（约束行为）与不能（实例化对象）
+// 14.2 协议包含的元素：属性{必须有get，set修饰，遵循方var还是let 是由get/set决定的，最小标准原则，可以是计算属性或者存储属性}，
+//                   方法{不能包含默认值}，
+//                   初始化器{必须有require修饰}
+//                   协议与关联类型 {associatedtype,typealias}
+//                   协议继承
+//                   只允许类遵循的协议 (AnyObject)
+// 14.3 协议可以被类，结构体，枚举，扩展遵循
+// 14.4 遵循多个协议，协议组合
+// 14.5 常见协议
+//      Equatable/Comparable/Hashable/Identifiable/CustomStringConvertible/CustomDebugStringConvertible
+//      CaseIterable/Codeble/CodingKeys
+// 14.6 协议扩展：
+//      可以扩展协议，来提供默认实现，协议遵循方还可以提供自己的实现，自己的实现会覆盖默认的实现
+//      协议扩展中可以使用协议中的其他成员
+// 14.7 协议约束:
+//      在协议扩展上使用类型约束，您可以使用该类型的方法和属性,通过类型约束可以同时使用两个类型的属性和方法，以及在特定类型上创建默认实现
 
 // 十五. 泛型
 
-// 十五. 扩展
+// 十六. 扩展
 
-// 十六. 错误，可选链
+// 十七. 错误，可选链
 
-// 十七. 并发
-
-
+// 十八. 并发
 
 var greeting = "Hello, playground"
-
 
 // 一. 注释
 
@@ -1634,7 +1648,7 @@ extension TeamRecord {
     wins + losses
   }
 }
-//协议扩展一般用于对协议中的方法提供默认的实现
+// 协议扩展一般用于对协议中的方法提供默认的实现
 // 尽管您还没有为采用该协议的具体类型编写代码，但您可以在其扩展中使用协议成员。那是因为编译器知道任何符合的类型都TeamRecord将具有TeamRecord.
 // 现在您可以编写一个简单的类型来采用TeamRecord和使用gamesPlayed而无需重新实现它。
 struct BaseballRecord: TeamRecord {
@@ -1741,6 +1755,9 @@ class Keeper<Animal> {
 let jason = Keeper(name: "Jason",
             morningCare: Cat(name: "Whiskers"),
           afternoonCare: Cat(name: "Sleepy"))
+
+// 用在方法中的用法
+// 对泛型进行约束
 
 // 18.3 类型擦除
 // 18.3.1 类型擦除概述
