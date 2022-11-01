@@ -7,19 +7,23 @@ import UIKit
 
 // Swift 总结
 // 一. 注释
-// 单行注释。多行注释，嵌套注释，Doc注释
+// 单行注释(Command + /)。多行注释，嵌套注释，Doc注释(Command + Option + /)
+//MARK: - 标注
+//TODO: - TODO
 
 // 二. 打印
-// print VS debugPrint
+// print VS debugPrint(会带上类型等信息)
 
 // 三. 运算符号
 // 1. 算术，关系，逻辑，赋值，位运算，三目赋值
-// 2. 比较特殊的运算符号: === !== ?? ... ..<
+// 2. 比较特殊的运算符号: === !==
+//    (左值是可选变量)??（右值是备选对象）
+//    ... ..<
 
 // 四. 常量与变量
 // 1. 类型推断
 // 2. 强制类型转换
-// 3. 常量的定义与二进制，十进制，八进制，十六进制表示
+// 3. 常量的定义与二进制，十进制，八进制，十六进制表示 [BOX]
 // 4. 变量
 
 // 五. 常用类型
@@ -27,29 +31,31 @@ import UIKit
 // 1. 值类型和引用类型：从存储位置，赋值行为对二者进行对比，什么是COW
 // 2. 字符串常见操作： +  \()  """  """" #/## startIndex,endIndex,index/firstIndex/ .../..<
 // 3. 元组: 定义，匿名元组，命名元组，解包，解包忽略某些成员
-// 4. 数组：定义，访问，遍历（需要index,不需要index），增，删，改，查，排序，交换
+// 4. 数组：定义，访问，遍历（需要index(enumerated),不需要index），增，删，改，查，排序，交换
 // 5. 字典: 定义，访问，遍历 (需要key，不需要key)，增，删，改，查
 // 6. 集合: 定义，访问，遍历，增，删除，查
 
 // 六. 控制语句
 // 1. while() {}/ repeat{} while()
 // 2. for index in range / for _ in range /for (key,value) in map
-// 3. switch 合并匹配，访问匹配，取值条件匹配，部分匹配
+// 3. switch 合并匹配，访问匹配，取值条件匹配，部分匹配 [TODO]
 // 4. break,continue,return,fallthrough
 // 5. guard
-// 6. where
-// 7. 模式匹配
-// a. if case/guard case/switch case + 元组/枚举 判断是否是某个案例
-// b. switch case/let where (如果变量直接来自switch变量则直接case _ where xxxx)
-// c. 模式表达式
-// d. 模式匹配通配符_ 准确值 值绑定
+// 6. where  [TODO]
+// 7. 模式匹配 [TODO]
+// a. if case/guard case/switch case + 元组/枚举 判断是否是某个案例 [TODO]
+// b. switch case/let where (如果变量直接来自switch变量则直接case _ where xxxx) [TODO]
+// c. 模式表达式 [TODO]
+// d. 模式匹配通配符_ 准确值 值绑定 [TODO]
 
 // 七. 方法
-// 1. func 方法名称(外部标签 内部标签:inout 类型=默认值...(可变参数)) -> (类型，元组)
-// 2. 方法重载：参数类型，参数外部标签，参数数量，返回值类型
+// 1. func 方法名称(外部标签 内部标签:inout 类型=默认值...(可变参数)) -> (类型，元组) (5个元素，并且在类型左右有inout,..)
+// 2. 方法重载：参数类型，参数数量，参数外部标签，返回值类型
 // 3. 将方法和闭包作为参数或者返回值
 // 4. 类方法static
 // 5. 结构体mutating方法
+// 总结 static/mutating func(outTag innerTag:inout String...,方法/类型/元组) -> 方法/类型/元组
+//     参数类型，参数数量，参数外部标签，返回值类型
 
 // 八. 可选类型
 // 1. 一个定时炸弹盲盒,定义
@@ -65,7 +71,7 @@ import UIKit
 // 9.6 自动闭包: 适合类型：无参数，返回值可有可无，传入表达式，延迟求值
 
 // 十. 函数式编程
-// 10.1 forEach/filter/map/compactMap/flatMap/reduce
+// 10.1 forEach/filter/map/compactMap/flatMap/reduce[函数编程6君子]
 
 // 十一. 属性
 // 11.1 存储属性，计算属性
