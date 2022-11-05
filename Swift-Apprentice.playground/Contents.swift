@@ -226,45 +226,85 @@ test.testFunc()
 // 还可以将值作为实现协议组合的对象返回
 // 所有的操作都必须是基于所暴露的协议来完成的
 
-// 十六. 扩展
-// 16.1 扩展不但可以针对类,结构体，枚举，还可以这对协议创建扩展（添加协议的默认实现）【适用对象: 类，结构体，枚举，协议】
-// 16.2 使用扩展，扩展类添加方法和计算属性和初始化器，但是不能添加存储属性，因为这会改变结构的大小和内存布局并破坏现有代码。 【不能添加存储属性，可以添加计算属性，初始化器，方法】
+// 十四. 扩展
+// 14.1 扩展不但可以针对类,结构体，枚举，还可以这对协议创建扩展（添加协议的默认实现）【适用对象: 类，结构体，枚举，协议】
+// 14.2 使用扩展，扩展类添加方法和计算属性和初始化器，但是不能添加存储属性，因为这会改变结构的大小和内存布局并破坏现有代码。 【不能添加存储属性，可以添加计算属性，初始化器，方法】
 //      通过在扩展中添加自己的初始化程序，可以为结构保留编译器的成员初始化程序
-// 16.3 使用扩展遵循的优点是，可以将协议采用与必要的方法和属性很好地分组，而不是让一堆协议使您的类型定义变得混乱。【作用：实现分组】
-// 16.4 Swift 允许为某些采用类型编写扩展。在协议扩展上使用类型约束，您可以使用该类型的方法和属性。
-// 16.5 将代码组织成扩展，将访问修饰符应用于扩展本身，这将帮助您将整个代码段分类为public、internal或private.当您将访问修饰符应用于扩展时，扩展的所有成员都会获得该访问级别。【添加访问控制】
+// 14.3 使用扩展遵循的优点是，可以将协议采用与必要的方法和属性很好地分组，而不是让一堆协议使您的类型定义变得混乱。【作用：实现分组】
+// 14.4 Swift 允许为某些采用类型编写扩展。在协议扩展上使用类型约束，您可以使用该类型的方法和属性。
+// 14.5 将代码组织成扩展，将访问修饰符应用于扩展本身，这将帮助您将整个代码段分类为public、internal或private.当您将访问修饰符应用于扩展时，扩展的所有成员都会获得该访问级别。【添加访问控制】
 
-// 十七. 访问控制
-// 17.1 private 只能被同一个类中，以及扩展中和嵌套类中访问到（不被其他类型）。 private(set) 表示只读属性
-// 17.2 文件私有权限fileprivate：它允许访问与实体在同一文件中编写的任何代码（不被其他文件访问）
-// 17.3 internal 表示可以从定义实体的软件模块中的任何位置访问实体
-// 17.4 public 表示它的模块外部的代码可以看到和使用的实体。（只能访问）
-// 17.5 open在public的基础上允许覆写改模块的代码（覆写，访问）
-// 17.6 将代码组织成扩展，将访问修饰符应用于扩展本身，这将帮助您将整个代码段分类为public、internal或private.
+// 十五. 访问控制
+// 15.1 private 只能被同一个类中，以及扩展中和嵌套类中访问到（不被其他类型）
+//      private(set) 表示只读属性
+// 15.2 文件私有权限fileprivate：它允许访问与实体在同一文件中编写的任何代码（不被其他文件访问）
+// 15.3 internal 表示可以从定义实体的软件模块中的任何位置访问实体
+// 15.4 public 表示它的模块外部的代码可以看到和使用的实体。（只能访问）
+// 15.5 open在public的基础上允许覆写改模块的代码（覆写，访问）
+// 15.6 将代码组织成扩展，将访问修饰符应用于扩展本身，这将帮助您将整个代码段分类为public、internal或private.
 //      当您将访问修饰符应用于扩展时，扩展的所有成员都会获得该访问级别。
 
-// 十八. 代码安全
-// 18.1 可选初始化器，可选链，可选类型处理if let,guard let,compactMap
-// 18.2 错误处理
-// 18.2.1 使用枚举定义错误类型
-// 18.2.2 有错误的地方使用throw抛出异常，会抛出异常的方法使用throws关键字声明
-// 18.2.3 使用do { try } catch （let）来捕获异常
-// 18.2.4 rethrows 自己不会抛出异常，但是会转抛异常
-// 18.3   try ? 不处理异常
-// 18.4   有异常直接退出应用 fatalError()
-// 18.5   可抛出异常属性 get throws
+// 十六. 代码安全
+// 16.1 【可选处理】可选初始化器，可选链，可选类型处理 if let,guard let,compactMap
+// 16.2 【错误处理】
+// 16.2.1 使用枚举定义错误类型
+// 16.2.2 有错误的地方使用throw抛出异常，会抛出异常的方法使用throws关键字声明
+// 16.2.3 使用do { try } catch （let）来捕获异常
+// 16.2.4 rethrows 自己不会抛出异常，但是会转抛异常
+// 16.3   try ? 不处理异常
+// 16.4   有异常直接退出应用 fatalError()
+// 16.5   可抛出异常属性 get throws
+/*
+// 方法
+// 属性 get throws
+// 下标 get throws
+ 
+do {
+    try  throw -> throws
+    
+} catch() {
+    fatalError()
+}
+ 
+try?
+try!
+ 
+*/
 
-// 十九. 内存管理
-// 19.1 弱引用（weak var value:Int ?）可有可无，生命周期比当前对象短。无主引用(unowned var value:Int) 必需拥有，生命周期比当前对象长
-// 19.2 捕获列表
-// 19.3 [weak self] [unowned self] weak strong dance
+enum XXXError:Error {
+    case failure(code:Int)
+}
 
-// 二十. 并发
-// 20.1 任务定义，取消任务，暂停任务
-// 20.1 异步方法 async throws(恶心扔掉) try await
-// 20.2 并行异步方法 async let / try await/ async throws
-// 20.3 异步属性 get async throws  异步下标 异步序列
-// 20.4 使用Actor来解决数据竞争问题
+func mayError(value:String?) throws -> String {
+    guard let value = value else {
+        throw XXXError.failure(code: 404)
+    }
+    return value
+}
+
+do {
+    try mayError(value: nil)
+} catch(let XXXError.failure(code)) {
+    print(code)
+}
+
+// 十七. 内存管理
+// 17.1 弱引用  （weak var value:Int ?）可有可无，生命周期比当前对象短。
+//      无主引用 (unowned var value:Int) 必需拥有，生命周期比当前对象长
+// 17.2 捕获列表
+// 17.3 [weak self] [unowned self] weak strong dance
+/*
+{ [weak self] (a:Int,b:Int) in
+    guard let `self` = self else {return}
+}
+*/
+
+// 十八. 并发
+// 18.1 任务定义，取消任务，暂停任务
+// 18.1 异步方法 async throws(恶心扔掉) try await
+// 18.2 并行异步方法 async let / try await/ async throws
+// 18.3 异步属性 get async throws  异步下标 异步序列
+// 18.4 使用Actor来解决数据竞争问题
 
 var greeting = "Hello, playground"
 
@@ -2638,7 +2678,7 @@ if case StudentS() = "test" {
     print("not equal")
 }
 
-// 二十三. 错误处理 【TODO】
+// 二十三. 错误处理
 
 // 23.1 使用Options作为最优先处理策略
 // 23.1.1 可失败的初始化器
@@ -3072,9 +3112,7 @@ lazy var description: () -> String = {
     return "\(self.title) by \(self.author.name)"
 }*/
 
-
-
-// 二十五. 并发 【TODO】
+// 二十五. 并发
 
 // 25.1 创建任务
 
