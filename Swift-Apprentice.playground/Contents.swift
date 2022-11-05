@@ -324,8 +324,14 @@ var greeting = "Hello, playground"
   */
  */
 
-// [TODO 衍生内容] 如何规范化Doc
+/// Test Doc
+/// - Parameter message: message to say
+/// - Returns: result content
+func sayHello(message:String) -> String {
+    return "Hello"
+}
 
+// [TODO 衍生内容] 如何规范化Doc
 
 // 二. 打印
 
@@ -474,6 +480,7 @@ print(dogName)
 // for in
 // for index in 1...6
 // for _ in 1..< 8
+// for (index,value) in array.enumerated()
 // for (key,value) in maps
 
 // if
@@ -484,7 +491,7 @@ print(dogName)
 //    fallthrough关键字不会检查它下一个将会落入执行的case中的匹配条件。fallthrough简单地使代码继续连接到下一个 case 中的代码(注意：是下一个，不是整个)
 // 2. 多个case相同处理: case 0,1,2,3,4,5:             [合并匹配]
 // 3. 使用范围匹配: case 0...5:                       [范围匹配]
-// 4. 使用let where匹配: case let x where x % 2 == 0 [取值条件匹配]
+// 4. 使用let where匹配: case let x where x % 2 == 0 [取值条件匹配] 把值拿下来，用where编写条件
 
 func isOdd(number:Int) -> Bool {
     switch (number) {
