@@ -216,7 +216,7 @@ let test = TestIMP()
 test.testFunc()
 */
 
-// 十五. 泛型
+// 十三. 泛型
 // 修饰类，修饰方法参数
 // 泛型中的类型约束
 // 类型擦除隐藏有关具体类型的不重要细节，但仍使用协议传达类型的功能。
@@ -227,12 +227,12 @@ test.testFunc()
 // 所有的操作都必须是基于所暴露的协议来完成的
 
 // 十六. 扩展
-// 16.1 扩展不但可以针对类,结构体，枚举，还可以这对协议创建扩展（添加协议的默认实现）
-// 16.2 使用扩展，扩展类添加方法和计算属性和初始化器，但是不能添加存储属性，因为这会改变结构的大小和内存布局并破坏现有代码。
+// 16.1 扩展不但可以针对类,结构体，枚举，还可以这对协议创建扩展（添加协议的默认实现）【适用对象: 类，结构体，枚举，协议】
+// 16.2 使用扩展，扩展类添加方法和计算属性和初始化器，但是不能添加存储属性，因为这会改变结构的大小和内存布局并破坏现有代码。 【不能添加存储属性，可以添加计算属性，初始化器，方法】
 //      通过在扩展中添加自己的初始化程序，可以为结构保留编译器的成员初始化程序
-// 16.3 使用扩展遵循的优点是，可以将协议采用与必要的方法和属性很好地分组，而不是让一堆协议使您的类型定义变得混乱。
+// 16.3 使用扩展遵循的优点是，可以将协议采用与必要的方法和属性很好地分组，而不是让一堆协议使您的类型定义变得混乱。【作用：实现分组】
 // 16.4 Swift 允许为某些采用类型编写扩展。在协议扩展上使用类型约束，您可以使用该类型的方法和属性。
-// 16.5 将代码组织成扩展，将访问修饰符应用于扩展本身，这将帮助您将整个代码段分类为public、internal或private.当您将访问修饰符应用于扩展时，扩展的所有成员都会获得该访问级别。
+// 16.5 将代码组织成扩展，将访问修饰符应用于扩展本身，这将帮助您将整个代码段分类为public、internal或private.当您将访问修饰符应用于扩展时，扩展的所有成员都会获得该访问级别。【添加访问控制】
 
 // 十七. 访问控制
 // 17.1 private 只能被同一个类中，以及扩展中和嵌套类中访问到（不被其他类型）。 private(set) 表示只读属性
@@ -1898,7 +1898,17 @@ let jason = Keeper(name: "Jason",
           afternoonCare: Cat(name: "Sleepy"))
 
 // 用在方法中的用法
+func test<T,K>(param1:T,param2:K) {
+    print(param1)
+    print(param2)
+}
+test(param1: 2, param2: "tbfungeek")
+
 // 对泛型进行约束
+func testFuncs<T:Numeric>(param1:T) {
+    print(param1 + 3)
+}
+testFuncs(param1: 34)
 
 // 18.3 类型擦除
 // 18.3.1 类型擦除概述
@@ -1935,12 +1945,13 @@ struct AnyPet<Food>: PetX {                  // 1
   private let _eat: (Food) -> Void          // 2
 
   // 3
-  init<SomePet: PetX>(_ pet: SomePet) where SomePet.Food == Food {
-    _eat = pet.eat(_:)
+  init<SomePet: PetX>(_ pet: SomePet/*遵循协议的实现者，也是要被擦除的类型*/) where SomePet.Food == Food {
+    _eat = pet.eat(_:) /*提取出要用的类型中通用的方法，差异的就不管了*/
   }
 
   // 4
   func eat(_ food: Food) {
+    //执行
     _eat(food)
   }
 }
@@ -1950,6 +1961,8 @@ struct AnyPet<Food>: PetX {                  // 1
 // 更近一步可以提供eraseToAnyPet实现
 
 extension PetX {
+    
+  //将自己擦除类型
   func eraseToAnyPet() -> AnyPet<Food> {
     .init(self)
   }
@@ -1995,8 +2008,13 @@ func makeValueRandomly() -> some FixedWidthInteger {
 // let v = makeValue() // works
 
 // 还可以将值作为实现协议组合的对象返回
-func makeEquatableNumericInt() -> some Numeric & Equatable { 1 }
-func makeEquatableNumericDouble() -> some Numeric & Equatable { 1.0 }
+func makeEquatableNumericInt() -> some Numeric & Equatable {
+    1
+}
+
+func makeEquatableNumericDouble() -> some Numeric & Equatable {
+    1.0
+}
 
 let value1 = makeEquatableNumericInt()
 let value2 = makeEquatableNumericInt()
