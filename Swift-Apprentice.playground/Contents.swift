@@ -73,64 +73,48 @@ import UIKit
 // 十. 函数式编程
 // 10.1 forEach/filter/map/compactMap/flatMap/reduce[函数编程6君子]
 
-// 十一. 属性
-// 11.1 存储属性，计算属性
-// 11.2 存储属性可以是let 常量，var变量，默认值，如果没有默认值则在初始化函数中对其进行赋值，它可以有didSet(oldValue)和willSet(newValue)属性监听器
-// 11.3 计算属性只能是变量，可以有set和get
-// 11.4 懒加载属性 layzy var value = {}()
-// 11.5 类属性 static
-// 11.6 propertyWrapper属性包装器（用于限定属性）
-//      (0) @propertyWrapper修饰结构体（1）私有属性（2）init(wrappedValue) (3)计算属性wrappedValue （4）projectedValue (5)$获取projectedValue
-//      (6) 参数，通用
+// 十一. 面向对象
 
-// 十二. 初始化器
-// 如果在结构体中添加任意一个初始化方法，默认成员初始化器就会失效，但是在扩展里面添加人意初始化方法不会导致默认成员初始化器失效，所以推崇这种方式
-// 必须在初始化完成之前完成非可选类型存储属性的初始化操作
-// 初始化分成两个阶段
-// 必需初始化器（该类的所有子类都必需实现，子类覆写不需要override），
-// 指定初始化器（调用直接父类的初始化器），便利初始化器（调用自己的其他初始化器，可以是指定，也可以是便利，但是最终都需要调用到指定初始化器）
+// 十一. 1 基本概念
+// 11.0 类与结构体枚举的区别 （结构：值，栈/类: 引用，堆）==/===
 
-// 十三. 类，结构体，枚举
-// 13.0 类与结构体枚举的区别
-// 13.1 类
-// 13.1.1 没有默认成员初始化器
-// 13.1.2 修改自身值的时候不用mutating
-// 13.1.3 单继承 super override
-// 13.1.4 final 类不允许继承/方法不允许覆写
-// 13.1.5 多态 as/as?/as! if let as
-//        if people is Man {} / if let m = people as? Man {}
-// 13.1.6 对象的析构
-// 13.2 枚举
-// 13.2.1 枚举定义，指定类型
-// 13.2.2 原始值，指定，访问，使用原始值来初始化枚举
-// 13.2.3 关联值定义，赋值，取值
-// 13.2.4 枚举遍历
-// 13.3 自定义操作符
-/*
-    precedencegroup BLCustomerPrecedence {
-      /// 优先从左向右， left, right or none
-      associativity: left
-      //    higherThan: MultiplicationPrecedence//优先级，比乘法运算高
-      //    lowerThan: AdditionPrecedence       // 优先级, 比加法运算低
-      assignment: false                   // 是否是赋值运算
-    }
+// 十一. 2 属性
+// 11.2.1 存储属性（类和结构体），计算属性（类，结构，枚举，扩展）[TODO 接口中可以吗]
+// 11.2.2 存储属性可以是let 常量，var变量，默认值，如果没有默认值则在初始化函数中对其进行赋值，它可以有didSet(oldValue)和willSet(newValue)属性监听器
+// 11.2.3 计算属性只能是变量，可以有set和get
+// 11.2.4 懒加载属性 layzy var value = {}()
+// 11.2.5 类属性 static
+// 11.2.6 propertyWrapper属性包装器（用于限定属性）
+//        (0) @propertyWrapper修饰结构体（1）私有属性 (2)计算属性wrappedValue （3）projectedValue （4）init(wrappedValue) (5)$获取projectedValue
+//        (6) 参数，通用
 
-    infix operator ~~: BLCustomerPrecedence
+// 十一. 3 方法
+// 11.3.0 方法包括初始化方法，一般方法，mutating方法，静态方法，析构方法，下标，操作符
+// 11.3.1 初始化方法：
+//        (0) 初始化方法必须保证在使用之前全部的存储属性得到初始化
+//        (1) 【 自动成员初始化器 】结构体有自动成员初始化器，但是一旦声明一个其他初始化器自动初始化器就会失效，但是如果在扩展中声明初始化器不会导致自动成员初始化器消失，类没有自动成员初始化器
+//        (2) 【 无参初始化器 】可以通过两种方式获得无参初始化器：在类属性定义的过程中指定全部存储属性的默认值，在初始化器中指定默认值
+//        (3) 【 必需初始化器 】子类必须提供该类型的初始化器，但是可以不用override来标识，对于convenience初始化方法也可以加上 required以确保子类对其进行实现。
+//        (4) 【 指定初始化器 】调用直接父类的初始化器
+//        (5) 【 便利初始化器 】调用自己的其他初始化器，可以是指定，也可以是便利，但是最终都需要调用到指定初始化器
+//        (6) 【 可失败初始化器 】可能失败的初始化器
+// 11.3.2 初始化过程：
+//        (0) 两步初始化 1. 先初始化当前类新增加的 2. 准备初始化父类需要的变量，调用super 初始化方法 3. 这时候就可以调用self的方法和变量了
+//        (1) 指定初始化程序必须从其【直接超类】调用指定初始化程序。 便利构造器必须从同一个类中调用另一个构造器，便利构造器最终必须调用指定构造器
+// 11.3.3 一般方法：
+// 11.3.4 mutating方法：不适用于类，只适用于结构体和枚举，修改自身值的时候不用mutating，不能用于常量
+// 11.3.5 静态方法: static 开头
+// 11.3.6 析构方法: deinit
+// 11.3.7 下标方法
+//        * 下标分成: 对象下标方法/静态下标方法
+//        * 原型和函数类似，包含一个参数列表和一个返回值
+//        * 参数列表可以是可变参数，可以抛出错误，可以是异步/但是不能是inout和默认参数
+//        * 下标的主体看起来像一个计算属性，由一个get和一个set构成，set是可选的。
+// 11.3.8 动态成员
+//        * 动态成员 @dynamicMemberLookup/dynamicMember 通过下标操作为对象添加动态成员
+// 11.3.9 键路径
+//        * 设置类的属性/访问类的属性/作为参数 使用方法\.类型.xxx tutorial[keyPath:
 
-    extension String {
-
-      static func ~~ (left: String, right: String) -> String {
-             return left + right
-        }
-    }
-*/
-// 13.4 下标操作
-// 13.4.1. 原型和函数类似，包含一个参数列表和一个返回值
-// 13.4.2. 参数列表可以是可变参数，可以抛出错误，可以是异步/但是不能是inout和默认参数
-// 13.4.3. 下标的主体看起来像一个计算属性，由一个get和一个set构成，set是可选的。
-// 13.4.4. 类下标操作
-// 13.4.5. 动态成员查找 @dynamicMemberLookup/dynamicMember
-// 13.4.6. 使用键路径 设置类的属性/访问类的属性/作为参数 使用方法\.类型.xxx tutorial[keyPath:
 /*
 class Personal {
     var name = "nameX"
@@ -140,24 +124,97 @@ let personal = Personal()
 let name = personal[keyPath: \.name]
 personal[keyPath: \.name] = "afterChange"
 */
-// 十四. 协议
-// 14.1 协议的能（约束行为）与不能（实例化对象）
-// 14.2 协议包含的元素：属性{必须有get，set修饰，遵循方var还是let 是由get/set决定的，最小标准原则，可以是计算属性或者存储属性}，
-//                   方法{不能包含默认值}，
+
+// 11.3.10 自定义操作符
+// https://abhimuralidharan.medium.com/how-to-create-a-custom-operator-like-operator-in-swift-55953c0c0bf2
+// https://docs.swift.org/swift-book/LanguageGuide/AdvancedOperators.html#//apple_ref/doc/uid/TP40014097-CH27-ID41
+// https://developer.apple.com/documentation/swift/operator-declarations
+/*
+    precedencegroup BLCustomerPrecedence {
+      /// 优先从左向右， left, right or none
+      associativity: left
+      //    higherThan: MultiplicationPrecedence//优先级，比乘法运算高
+      //    lowerThan: AdditionPrecedence       // 优先级, 比加法运算低
+      assignment: false                   // 是否是赋值运算
+    }
+ 
+    /*
+     Infix — Used between two values (ex: <value>+<value>)
+     Prefix — Used before a value (ex: !<value>)
+     Postfix — Used after a value (ex: <value>!)
+    */
+ 
+    infix operator ~~: BLCustomerPrecedence
+    extension String {
+      static func ~~ (left: String, right: String) -> String {
+             return left + right
+        }
+    }
+*/
+
+// 十一. 4 继承与多态
+// 11.4.0 单继承 super override
+// 11.4.1 final 类不允许继承/方法不允许覆写
+// 11.4.2 多态 as/as?/as! if let as
+//        if people is Man {} / if let m = people as? Man {}
+
+// 十一. 5 枚举
+// 11.5.1 枚举定义，指定类型
+// 11.5.2 原始值，指定，访问，使用原始值来初始化枚举
+// 11.2.3 关联值定义，赋值，取值
+// 11.2.4 枚举遍历
+// 11.2.5 一个枚举值不能既有关联值又有原始值
+
+// 十二. 协议
+// 12.1 协议的能（约束行为）与不能（实例化对象）
+// 12.2 协议包含的元素：
+//                   属性{必须有get，set修饰，遵循方var还是let 是由get/set决定的，最小标准原则，可以是计算属性或者存储属性}，
 //                   初始化器{必须有require修饰}
+//                   方法{不能包含默认值}，
 //                   协议与关联类型 {associatedtype,typealias}
 //                   协议继承
 //                   只允许类遵循的协议 (AnyObject)
-// 14.3 协议可以被类，结构体，枚举，扩展遵循
-// 14.4 遵循多个协议，协议组合
-// 14.5 常见协议
+//
+// 12.3 协议可以被类，结构体，枚举，扩展遵循
+// 12.4 遵循多个协议，协议组合
+// 12.5 常见协议
 //      Equatable/Comparable/Hashable/Identifiable/CustomStringConvertible/CustomDebugStringConvertible
 //      CaseIterable/Codeble/CodingKeys
-// 14.6 协议扩展：
+//
+// 12.6 协议扩展：【提供默认实现和携带方法给遵循者】
 //      可以扩展协议，来提供默认实现，协议遵循方还可以提供自己的实现，自己的实现会覆盖默认的实现
 //      协议扩展中可以使用协议中的其他成员
-// 14.7 协议约束:
+//      协议扩展中还可以提供一些已经实现好的方法供协议实现方使用
+//
+// 12.7 协议约束: 【使用某个协议中的方法，要同时满足两个协议才能遵循】
 //      在协议扩展上使用类型约束，您可以使用该类型的方法和属性,通过类型约束可以同时使用两个类型的属性和方法，以及在特定类型上创建默认实现
+//      whare Self:协议A
+//      协议约束的好处 1.可以使用协议A中的方法 2.指定只有同时实现这两个协议的类才可以使用这个扩展中的方法
+
+/*
+protocol ProtocolA {
+    func test()
+}
+ 
+protocol Test {
+}
+
+extension Test where Self:ProtocolA{
+    func sayHello() {
+        test() //可以使用ProtocolA的方法
+        print("sayHello")
+    }
+}
+
+class TestIMP:Test {
+    func testFunc() {
+        sayHello() //不能使用因为没有实现ProtocolA
+    }
+}
+
+let test = TestIMP()
+test.testFunc()
+*/
 
 // 十五. 泛型
 // 修饰类，修饰方法参数
@@ -1390,7 +1447,7 @@ for pet in Pet.allCases {
 
 // 十七. 协议
 // 17.1 协议不是也不能用于实例化对象的，而是用于约束和描述接口或者类的概要的。使用协议，可以定义一组通用的属性和行为，具体类型可以执行和实现。
-// 17.2 协议可以在类，结构，枚举，以及扩展中被采用
+// 17.2
 // 使用扩展遵循的优点是，可以将协议采用与必要的方法和属性很好地分组，而不是让一堆协议使您的类型定义变得混乱。
 // 17.3 一旦一个类型实现了协议的所有成员，就称该类型遵循协议。
 // 17.4 协议定义 = 属性 + 初始化器 + 方法 + 继承
@@ -1522,10 +1579,8 @@ protocol Named: AnyObject {
 // 对自定义类判断是否相等
 
 class Record {
-  
   var wins: Int
   var losses: Int
-    
   init(wins: Int, losses: Int) {
       self.wins = wins
       self.losses = losses
@@ -1648,8 +1703,8 @@ struct Toy: Codable {
 // (4) CodingKeys 重命名属性
 /*
 struct Employee: Codable {
-  var name: String
   var id: Int
+  var name: String
   var favoriteToy: Toy?
 
   enum CodingKeys: String, CodingKey {
@@ -1779,13 +1834,13 @@ extension TeamRecord where Self: PostSeasonEligible {
 //将类型约束应用于TeamRecord扩展意味着在扩展中，self已知是TeamRecord和PostSeasonEligible
 //这意味着我们可以使用在这两种类型上定义的属性和方法。还可以使用类型约束在特定类型组合上创建默认实现。
 //也就是说通过类型约束可以同时使用两个类型的属性和方法，以及在特定类型上创建默认实现
-
 protocol Tieable {
   var ties: Int { get }
 }
 
-//With type constraints, you can also make a default implementation for winningPercentage,
-//specifically for types that are both a TeamRecord and Tieable:
+// With type constraints, you can also make a default implementation for winningPercentage,
+// specifically for types that are both a TeamRecord and Tieable:
+// 通过类型约束可以指定一个winningPercentage默认实现，当这个类既是TeamRecord又是Tieable的时候
 extension TeamRecord where Self: Tieable {
   var winningPercentage: Double {
     Double(wins) / Double(wins + losses + ties)
@@ -2068,6 +2123,7 @@ static func ** (lhs: Int, rhs: Int) -> Int {
 print(10**2)// 100
 
 // 20.5 整体例子
+/*
 precedencegroup BLCustomerPrecedence {
   /// 优先从左向右， left, right or none
   associativity: left
@@ -2085,16 +2141,15 @@ extension String {
     }
 }
 print("12112"~~"~~")
+*/
 
 // 二十一. 下标操作
-
 // 21.1 基本定义
 /*
  subscript(parameterList) -> ReturnType {
    get {
      // return someValue of ReturnType
    }
-  
    set(newValue) {
      // set someValue of ReturnType to newValue
    }
@@ -2233,17 +2288,14 @@ let tutorialType = tutorial[keyPath: type]
 
 // 21.5.3 设置属性
 // 键路径可以更改属性值
-
 class Jukebox {
   var song: String
-  
   init(song: String) {
     self.song = song
   }
 }
 
 let jukebox = Jukebox(song: "Nothing Else Matters")
-
 let song = \Jukebox.song
 jukebox[keyPath: song] = "Stairway to Heaven"
 
@@ -2274,8 +2326,27 @@ circle.x
 circle.y
 */
 
+struct Point {
+  let x, y: Int
+  let desc:String
+}
+
+@dynamicMemberLookup
+struct CircleSSS {
+    let center:Point
+    let radius:Double
+    
+    subscript(dynamicMember keyPath:KeyPath<Point/*应用于那种类型的对象*/,String/*输出的类型*/>) -> String {
+        center[keyPath: keyPath]
+    }
+}
+
+let circlesss = CircleSSS(center: Point(x: 23, y: 34, desc: "tbfungeek"), radius: 34.5)
+circlesss.desc
+
+
 // 21.6 键路径作为函数
-//如果函数是只有一个参数的闭包并且键路径的返回类型与闭包的返回类型匹配，则可以将键路径用作函数：
+//如果函数是【只有一个参数的闭包】并且【键路径的返回类型与闭包的返回类型匹配】，则可以将键路径用作函数：
 let anotherTutorial = Tutorial(title: "Encoding and Decoding in Swift",
                                author: me,
                                details: (type: "Swift",
