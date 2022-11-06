@@ -354,6 +354,7 @@ debugPrint("Hello Swift Apprentice Reader!")
 //           对可选类型进行空判断，如果包含一个值就进行解封，否则就返回一个默认值b
 // 区间运算符: 闭区间 a...b
 //           开区间 a..<b
+// 通配符:    ~=
 
 // 四. 常量变量
 // 常量:
@@ -1044,7 +1045,7 @@ var c:Int {
 }
 
 // 14.5 get{} set{} didSet{} willSet{}
-// didSet{} willSet{}一般用于监听存储属性的修改，get{} set{} 用于计算属性中
+// didSet{} willSet{}用于监听存储属性的修改，get{} set{} 用于计算属性中
 // didSet 属性值改变后触发，willSet 在属性值改变前触发
 // willSet可以带一个newName的参数，没有的话，该参数默认命名为newValue。
 // didSet可以带一个oldName的参数，表示旧的属性，不带的话默认命名为oldValue。
@@ -1105,23 +1106,23 @@ struct Circle {
 // 14.8.1 属性包装器基本使用
 @propertyWrapper                                           // 1
 struct ZeroToOne {                                         // 2
+    
     private var value: Double
+    var wrappedValue: Double {                               // 5
+      get { value }
+      set { value =  Self.clamped(newValue) }
+    }
     
     init(wrappedValue: Double) {
       value = Self.clamped(wrappedValue)                     // 4
     }
     
-    var wrappedValue: Double {                               // 5
-      get { value }
-      set { value =  Self.clamped(newValue) }
-    }
-
     private static func clamped(_ input: Double) -> Double { // 3
         min(max(input, 0), 1)
     }
 }
 
-// 1. 该属性@propertyWrapper表示这种类型可以用作属性包装器。因此，它必须提供一个名为wrappedValue.
+// 1. 该属性propertyWrapper表示这种类型可以用作属性包装器。因此，它必须提供一个名为wrappedValue.
 // 2. 在其他所有方面，它只是一种标准类型。在这种情况下，它是一个带有私有变量的结构value。
 // 3. 私有静态clamped(_:)辅助方法执行最小/最大舞蹈以将值保持在零和一之间。
 // 4. 属性包装器类型需要包装的值初始值设定项。
@@ -1152,18 +1153,17 @@ printValue(3.14)
 
 @propertyWrapper
 struct ZeroToOneV2 {
-  private var value: Double
+    private var value: Double
+    var wrappedValue: Double {
+      get { min(max(value, 0), 1) }
+      set { value = newValue }
+    }
+
+    var projectedValue: Double { value }
 
   init(wrappedValue: Double) {
     value = wrappedValue
   }
-
-  var wrappedValue: Double {
-    get { min(max(value, 0), 1) }
-    set { value = newValue }
-  }
-
-  var projectedValue: Double { value }
 }
 
 //属性包装器还提供另一种类型，称为projectedValue. 您可以使用它来提供对未固定值的直接访问
@@ -1359,7 +1359,7 @@ class StudentAthlete: Student {
 */
 
 // 15.11.3 必需初始化器，指定初始化器和便利初始化器
-// 15.11.3.1 必需初始化器 该类的子类都必需实现的初始化器
+// 15.11.3.1 必需初始化器 该类的子类都必需实现的初始化器 (协议中声明的初始化器，类实现的时候必须加required)
 // 注意覆写必需的初始化程序不需要override关键字。
 class StudentX {
   let firstName: String
@@ -1382,9 +1382,9 @@ class StudentAthleteX: StudentX {
 }
 
 // 15.11.3.2 指定初始化器和便利初始化器
-// 指定初始化程序必须从其【直接超类】调用指定初始化程序。
-// 便利构造器必须从同一个类中调用另一个构造器。
 // 便利构造器最终必须调用指定构造器
+// 便利构造器必须从同一个类中调用另一个构造器。
+// 指定初始化程序必须从其【直接超类】调用指定初始化程序。
 
 // 15.12 对象的析构
 
@@ -2013,12 +2013,19 @@ extension PetX {
   func eraseToAnyPet() -> AnyPet<Food> {
     .init(self)
   }
+    
+    func anyPet() -> some PetX {
+        return self
+    }
 }
 
 let morePets = [DogX().eraseToAnyPet(),
                 CatX().eraseToAnyPet()]
 
 // 18.3 不透明的返回类型
+//（对调用方屏蔽类型信息，但是返回支持的协议信息）
+//（不同分支返回的类型必须一致）
+//（可以作为组合实现）
 // 不透明类型是指编译器能获取到类型信息，但是模块使用者却不能获取到，被调用方知能获得返回对象的具备的功能，但是不知道具体的类型
 // 具有不透明返回类型的函数或方法会隐藏返回值的类型信息。函数不再提供具体的类型作为返回类型，而是根据它支持的协议来描述返回值。
 // 隐藏类型信息在模块和调用该模块的代码的连接处很有用，因为返回值的底层类型可以保持私有。与返回类型为协议类型的值不同，不透明类型保留类型标识——编译器可以访问类型信息，但调用该模块的代码却不能。
@@ -2160,7 +2167,6 @@ func * (left: String, right: Int) -> String {
     }
     return result
 }
-
 print("a" * 6)
  */
 // 20.1 定义操作符的要求：通常最好坚持使用字符/, =, -, +, !, *, %, <, >, &, |,^和?，尽管允许使用许多其他 Unicode 字符。您可能需要经常输入，所以击键越少越好。
@@ -2224,6 +2230,10 @@ print("12112"~~"~~")
 //下标可能有可变参数并且可以抛出错误但不能使用inout或默认参数。
 //下标的主体看起来像一个计算属性：它有一个 getter 和一个 setter。setter 是可选的，因此下标可以是读写的或只读的
 //你可以省略setter的newValue默认参数；它的类型与下标的返回类型相同。仅当您想将其名称更改为其他名称时才声明它。
+
+// 关于参数总结:
+// 协议方法中不能使用默认值
+// 下标参数不能使用inout或者默认值
 
 class Person {
   let name: String
@@ -2420,6 +2430,7 @@ let tutorials = [tutorial, anotherTutorial]
 let titles = tutorials.map(\.title)
 
 // 二十二. 模式匹配
+
 // 模式提供了匹配值的规则
 // 可以在if/guard/switch case 以及 while和for
 // 22.1 场景 1 if guard
@@ -2507,6 +2518,8 @@ default:
 
 */
 
+// 【整体格式】 if/guard/switch/for case .枚举(let)/元组(let) where XXXXXX = 枚举/元组
+
 // 22.5 场景 5 非可选匹配
 let namess: [String?] =
   ["Michelle", nil, "Brandon", "Christine", nil, "David"]
@@ -2556,11 +2569,11 @@ struct Rectangle {
 
 let view = Rectangle(width: 15, height: 60, background: "Green")
 switch view {
-case _ where view.height < 50:
+case let valueX where valueX.height < 50:
   print("Shorter than 50 units")
-case _ where view.width > 20:
+case let valueX where valueX.width > 20:
   print("Over 50 tall, & over 20 wide")
-case _ where view.background == "Green":
+case let valueX where valueX.background == "Green":
   print("Over 50 tall, at most 20 wide, & green") // Printed!
 default:
   print("This view can’t be described by this example")
@@ -2618,9 +2631,9 @@ case (nil, nil):
   print("Both username and password are missing")  // Printed!
 }
 
-// 22.11 通配符规则
+// 22.11 通配符规则 (精确，通配，取值条件判断)
 // 使用下划线来匹配分量的任何值
-// 值绑定，只需在匹配模式时使用varorlet来声明变量或常量
+// 值绑定，只需在匹配模式时使用var or let来声明变量或常量
 // 如果你想绑定多个值，你可以写let多次，或者更好的是，移动let元组的外部：
 /*
  if case (let x, 0, 0) = coordinate {
@@ -2708,7 +2721,6 @@ let house = PetHouse(squareFeet: 1)    // Optional(Pethouse)
 /*
 class Pet {
   var breed: String?
-
   init(breed: String? = nil) {
     self.breed = breed
   }
@@ -2716,7 +2728,6 @@ class Pet {
 
 class Person {
   let pet: Pet
-
   init(pet: Pet) {
     self.pet = pet
   }
@@ -2728,7 +2739,6 @@ let olive = Pet()
 let janie = Person(pet: olive)
 let dogBreed = janie.pet.breed! // This is bad! Will cause a crash!
 */
-
 
 /*
 class Toy {
@@ -2794,9 +2804,7 @@ if let sound = janie.pet?.favoriteToy?.sound {
 */
 
 // 23.1.3 compactMap 过滤nil
-
 /*
- 
  let team = [janie, tammy, felipe]
  let betterPetNames = team.compactMap { $0.pet?.name }
 
@@ -2818,8 +2826,11 @@ class Pastry {
 }
 
 enum BakeryError: Error {
-  case tooFew(numberOnHand: Int), doNotSell, wrongFlavor
-  case inventory, noPower
+  case tooFew(numberOnHand: Int)
+  case doNotSell
+  case wrongFlavor
+  case inventory
+  case noPower
 }
 
 // 23.2.2 抛出错误
@@ -3076,14 +3087,18 @@ class Tutorial {
 // 捕获列表是由闭包捕获的变量列表，并出现在闭包的开头任何参数之前。
 
 var counter = 0
-var g = {print(counter)}
+var g = {
+    print(counter)
+}
 counter = 1
 g()
 
 //g()闭包打印变量的counter更新值 1，因为它具有对counter变量的引用
 
 counter = 0
-g = {[counter] in print(counter)}
+g = { [counter] in
+    print(counter)
+}
 counter = 1
 g()
 
@@ -3100,7 +3115,6 @@ lazy var description: () -> String = {
 */
 
 // 24.5 weak self
-
 /*
  lazy var description: () -> String = {
    [weak self] in
