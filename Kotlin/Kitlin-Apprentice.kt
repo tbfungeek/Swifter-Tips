@@ -59,5 +59,10 @@ fun main() {
     println(varnumber)
     println(reallyConstant)
 
-    //Byte Short Int Long Float Double Char String Any Unit Nothing
+    //Boolean Byte Short Int Long Float Double Char String Any Unit Nothing
+
+    var alsoTrue = !(1 == 2)
+
+    //if while / do {} while / break
+
 }
