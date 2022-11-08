@@ -208,6 +208,60 @@ fun main() {
     }*/
     //var mustHaveResult = nullableInt ?: 0
 
+    var stringArray = arrayOf("ListString","MapString","数组")
+    var intArr = arrayOf(1,2,3,4,5,6,7) // Array<Int>
+    var intArray = intArrayOf(1,2,3,4,5)  // int[]
+    var floatArray = floatArrayOf(1.0f,2.0f,3.5f,4.7f,5.9f) // intArrayOf IntArray  floatArrayOf FloatArray  doubleArrayOf DoubleArray booleanArrayOf 
+    //  Array<Int>(arrayOf) ---> toIntArray() ---> intArrayOf(IntArray)
+    var doubleArray = doubleArrayOf(1.0,2.0,3.5,4.7,5.9)
+    println(stringArray)
+    println(intArray)
+    println(floatArray)
+
+    // 列表
+    //就原始性能而言，数组通常比列表更有效，但列表具有动态大小的附加功能。也就是说，数组是固定大小的，但列表可以设置为根据需要增长和缩小，
+    val innerPlanets = listOf("Mercury", "Venus", "Earth", "Mars") //List<String>
+
+    val innerPlanetsArrayList =
+        arrayListOf("Mercury", "Venus", "Earth", "Mars")
+
+    //可以通过不传递任何参数来创建一个空列表list()。因为编译器无法从中推断出类型，所以您需要使用类型声明来使类型显式：
+    val subscribers = listOf<String>()
+
+    //可变列表
+    val outerPlanets =
+        mutableListOf("Jupiter", "Saturn", "Uranus", "Neptune")
+
+    val exoPlanets = mutableListOf<String>()
+
+    //isEmpty size first last minOrNull（返回列表中具有最低值的元素）maxOrNull  min/max
+    //players[0]
+    //player !in players
+    //contains
+    // 附加元素 players.add("Eli")
+    // 插入元素 players.add(5, "Frank")
+    // 移除元素 players.remove("Gina")  players.removeAt(2)
+    // 更新元素 players[4] = "Franklin"
+    /*
+        for (player in players) {
+            println(player)
+        }
+
+        for ((index, player) in players.withIndex()) {
+            println("${index + 1}. $player")
+        }
+     */
+    
+    var nullableList: List<Int>? = listOf(1, 2, 3, 4)
+    nullableList = null
+    var listOfNullables: List<Int?> = listOf(1, 2, null, 4)
+    listOfNullables = null // Error: Null can not be a value of a non-null type
+
+    var nullableListOfNullables: List<Int?>? = listOf(1, 2, null, 4)
+    nullableListOfNullables = null
+
+
+
 
 
 
